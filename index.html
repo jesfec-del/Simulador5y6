@@ -241,4 +241,19 @@
                         setTimeout(()=>{
                             sC();
                             setTimeout(()=>{
-fW('confirm',35,()=>{ fW('acept',50,()=>{ L.setItem('prog_6',(i+1).toString()); bS.disabled=false; act(); }); });},250);},250);return true;}return false;}bS.onclick=()=>{ fS(); };bR.onclick=()=>{ if(confirm("¿Cambiar combinaciones o unidades?")){ L.removeItem('p_6'); L.removeItem('max_6'); pD(); } };act();}if(!m||!x){ pD(); }else{ arr(JSON.parse(m)); };
+                                fW('confirm',35,()=>{ fW('acept',50,()=>{ L.setItem('prog_6',(i+1).toString()); bS.disabled=false; act(); }); });
+                            },250);
+                        },250);
+                        return true;
+                    }
+                    return false;
+                }
+                bS.onclick=()=>{ fS(); };
+                bR.onclick=()=>{ if(confirm("¿Cambiar combinaciones o unidades?")){ L.removeItem('p_6'); L.removeItem('max_6'); pD(); } };
+                act();
+            }
+            if(!m||!x){ pD(); }else{ arr(JSON.parse(m)); }
+        }
+    </script>
+</body>
+</html>
