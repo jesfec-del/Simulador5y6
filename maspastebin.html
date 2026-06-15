@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Oficial de Apuestas INH - Simulador Integrado</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background: #09090b; color: #fafafa; padding: 10px; max-width: 100%; margin: 0; min-height: 100vh; box-sizing: border-box; }
+        h1 { text-align: center; font-size: 20px; font-weight: 800; margin: 10px 0 2px 0; color: #ffc200; text-transform: uppercase; letter-spacing: 0.05em; }
+        .info { font-size: 11px; text-align: center; color: #71717a; margin-bottom: 15px; border-bottom: 1px solid #27272a; padding-bottom: 10px; font-weight: 500; }
+        .carrera-container { background: #141416; padding: 12px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #27272a; }
+        .carrera-header { font-size: 12px; font-weight: 800; color: #a1a1aa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; }
+        .carrera-header::after { content: '5y6 nacional'; font-size: 9px; color: #ffc200; background: rgba(255,194,0,0.1); padding: 2px 6px; border-radius: 4px; }
+        .grid-caballos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .radix-horse-btn { position: relative; display: flex; align-items: center; justify-content: center; height: 42px; width: 100%; max-width: 50px; border-radius: 8px; background: #27272a; color: #fafafa; border: 1px solid #3f3f46; font-weight: 700; cursor: pointer; font-size: 15px; transition: all 0.1s ease; margin: 0 auto; -webkit-tap-highlight-color: transparent; }
+        .radix-horse-btn.selected { background: #ffc200 !important; color: #000000 !important; border-color: #ffc200 !important; font-weight: 900; transform: scale(0.95); }
+        .form-actions { background: #141416; padding: 14px; border-radius: 12px; border: 1px solid #27272a; display: flex; flex-direction: column; gap: 10px; margin-top: 15px; margin-bottom: 30px; }
+        .form-actions label { font-size: 12px; color: #a1a1aa; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+        input[type="number"] { width: 100%; padding: 12px; background: #09090b; border: 1px solid #27272a; color: #fff; border-radius: 8px; font-weight: bold; font-size: 16px; outline: none; box-sizing: border-box; text-align: center; }
+        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; text-align: center; transition: background 0.1s; -webkit-tap-highlight-color: transparent; }
+        .btn-limpiar { background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; }
+        .btn-sellar { background: #2563eb; color: #fff; font-weight: 800; text-transform: lowercase; letter-spacing: 0.05em; }
+        .modal-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-window { background: #141416; padding: 20px; border-radius: 16px; text-align: center; max-width: 300px; border: 1px solid #27272a; width: 100%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .modal-window p { margin: 0 0 20px 0; font-size: 15px; font-weight: 700; color: #f4f4f5; }
+        .btn-modal { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; text-transform: lowercase; -webkit-tap-highlight-color: transparent; }
+        .btn-activar-bot { position: fixed; bottom: 10px; left: 10px; z-index: 20000; background: #ffc200; color: #000; border: none; padding: 10px 15px; font-weight: 900; border-radius: 8px; cursor: pointer; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+    <h1>INH <span style="color:#fff;">Apuestas</span></h1>
+    <div class="info">Simulador Móvil Integrado con Bot de Pruebas</div>
+    <div id="panel-juego">
+        <div id="carreras-wrapper"></div>
+        <div class="form-actions">
+            <label>Unidades del Cuadro:</label>
+            <input type="number" value="1" min="1" inputmode="numeric">
+            <button class="btn-action btn-limpiar">Limpiar Selección</button>
+            <div role="button" class="btn-action btn-sellar">vsela</div>
+        </div>
+    </div>
+    <div id="md-confirm" class="modal-layer">
+        <div class="modal-window">
+            <p>¿Proceder con el registro?</p>
+            <button class="btn-modal" style="background:#2563eb; color:#fff;">confirm</button>
+        </div>
+    </div>
+    <div id="md-acept" class="modal-layer">
+        <div class="modal-window">
+            <p>Enviando al Pozo Nacional...</p>
+            <button class="btn-modal" style="background:#10b981; color:#000;">acept</button>
+        </div>
+    </div>
+    <button class="btn-activar-bot" onclick="arrancarBot()">🤖 EJECUTAR BOT</button>
+    <script>
+        const wrapper = document.getElementById('carreras-wrapper');
+        for (let i = 1; i <= 6; i++) {
+            const container = document.createElement('div');
+            container.className = 'carrera-container';
+            container.innerHTML = `<div class="carrera-header">Válida ${i}</div>`;
+            const grid = document.createElement('div');
+            grid.className = 'grid-caballos';
+            for (let j = 1; j <= 10; j++) {
+                const btn = document.createElement('button');
+                btn.className = 'radix-horse-btn';
+                btn.id = `radix-_r_${Math.random().toString(36).substr(2, 2)}_`;
+                btn.innerText = j;
+                btn.onclick = () => btn.classList.toggle('selected');
+                grid.appendChild(btn);
+            }
+            container.appendChild(grid);
+            wrapper.appendChild(container);
+        }
+        document.querySelector('.btn-limpiar').onclick = () => {
+            document.querySelectorAll('.radix-horse-btn').forEach(b => b.classList.remove('selected'));
+        };
+        document.querySelector('.btn-sellar').onclick = () => { document.getElementById('md-confirm').style.display = 'flex'; };
+        document.querySelector('#md-confirm button').onclick = () => { document.getElementById('md-confirm').style.display = 'none'; document.getElementById('md-acept').style.display = 'flex'; };
+        document.querySelector('#md-acept button').onclick = () => { document.getElementById('md-acept').style.display = 'none'; };
+        function arrancarBot() {
+            let L=localStorage, m=L.getItem('p_6'), x=L.getItem('max_6');
+            function pD(){
+                let p=[];
+                for(let i=1;i<=6;i++){
+                    let e=prompt(`Carrera ${i}`);
+                    if(!e)return;
+                    p.push(e.split(/[\s.-]+/).map(n=>n.trim()).filter(n=>n!==""));
+                }
+                L.setItem('p_6',JSON.stringify(p));
+                L.setItem('prog_6','0');
+                L.setItem('max_6',prompt("Unidades?", x || "1")||"1");
+                arr(p);
+            }
+            function arr(pf){
+                let mx = -1;
+                const cT = () => pf.reduce((a, b) => a * b.length, 1);
+                if (cT() > 999) {
+                    let bc = 0, bi = -1;
+                    for (let h = 0; h < pf.length; h++) {
+                        let cc = cT() / pf[h].length;
+                        if (cc > bc && cc < 999) { bc = cc; bi = h; }
+                    }
+                    if (bi !== -1) { mx = bi; alert('Optimizado INH: Carrera ' + (mx + 1)); }
+                }
+                let tda = cI(pf, mx), tot = tda.length;
+                function cI(lX, mX) {
+                    let res = [[]];
+                    for (let c = 0; c < lX.length; c++) {
+                        if (c === mX) continue;
+                        let rv = [], b = lX[c];
+                        for (let j = 0; j < res.length; j++) {
+                            for (let x = 0; x < b.length; x++) {
+                                if (res[j]) rv.push(res[j].concat([b[x]]));
+                            }
+                        }
+                        res = rv;
+                    }
+                    return res;
+                }
+                let p=document.getElementById('p-flot');
+                if(p)p.remove();
+                p=document.createElement('div');
+                p.id='p-flot';
+                p.setAttribute('style','position:fixed!important;bottom:20px!important;right:20px!important;z-index:2147483647!important;background:#111!important;color:#fff!important;padding:12px!important;border-radius:10px!important;font-family:sans-serif!important;width:150px!important;border:2px solid #ffc200!important;');
+                let t=document.createElement('div'), cV=document.createElement('div'), bS=document.createElement('button'), bM=document.createElement('button'), bG=document.createElement('button'), bR=document.createElement('div');
+                cV.style="font-size:14px;color:#10b981;font-weight:bold;margin:4px 0;word-break:break-all;";
+                bS.style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer;";
+                bM.style=bG.style="width:100%;padding:5px;background:#10b981;color:#fff;border:none;border-radius:4px;margin-top:4px;font-size:12px;font-weight:bold;cursor:pointer;";
+                bG.style.background="#4b5563";
+                bR.innerText='Cambiar';
+                bR.style="text-decoration:underline;cursor:pointer;color:#aaa;text-align:center;font-size:12px;margin-top:6px;";
+                p.append(t,cV,bS,bM,bG,bR);
+                document.documentElement.appendChild(p);
+                let esq=0;
+                bM.innerText='MOVER';
+                bM.onclick=()=>{
+                    esq=(esq+1)%4;
+                    p.style.top=p.style.bottom=p.style.left=p.style.right='auto';
+                    p.style[esq===0||esq===3?'bottom':'top']='20px';
+                    p.style[esq===0||esq===1?'right':'left']='20px';
+                };
+                bG.innerText='IR A';
+                bG.onclick=()=>{
+                    let g=prompt(`Ir al (1-${tot}):`);
+                    if(g&&!isNaN(g)&&g>=1&&g<=tot){ L.setItem('prog_6',(parseInt(g)-1).toString()); bS.disabled=false; act(); }
+                };
+                function sT(e){ if(e) e.click(); }
+                function mC(idx) {
+                    const bL = Array.from(document.querySelectorAll('button, div[role="button"]')).find(b => (b.innerText || '').toLowerCase().includes('limpiar'));
+                    if (bL) sT(bL);
+                    let mA = document.body;
+                    if (bL) {
+                        let pr = bL.parentElement;
+                        while (pr && pr.tagName !== 'BODY') {
+                            if (pr.querySelectorAll('button,div[role="button"]').length >= 40) { mA = pr; break; }
+                            pr = pr.parentElement;
+                        }
+                    }
+                    const bts = Array.from(mA.querySelectorAll('button,div[role="button"]')).filter(b => /^\d+$/.test(b.innerText.trim()));
+                    let pts = new Set();
+                    bts.forEach(b => {
+                        let pr = b.parentElement;
+                        while (pr && pr !== mA) {
+                            if (pr.querySelectorAll('button,div[role="button"]').length >= 4) { pts.add(pr); break; }
+                            pr = pr.parentElement;
+                        }
+                    });
+                    let sR = Array.from(pts).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+                    if (sR.length > 6) sR = sR.slice(-6);
+                    let currLine = tda[idx], l_idx = 0;
+                    for (let g = 0; g < 6; g++) {
+                        let r = sR[g];
+                        if (r) {
+                            if (g === mx) {
+                                pf[mx].forEach(cab => {
+                                    let btn = Array.from(r.querySelectorAll('button,div[role="button"]')).find(b => b.innerText.trim() === cab.toString());
+                                    if (btn) sT(btn);
+                                });
+                            } else {
+                                let an = currLine[l_idx++];
+                                let btn = Array.from(r.querySelectorAll('button,div[role="button"]')).find(b => b.innerText.trim() === an.toString());
+                                if (btn) sT(btn);
+                            }
+                        }
+                    }
+                    let val = L.getItem('max_6') || "1", inp = document.querySelector('input[type="number"]');
+                    if (inp) {
+                        inp.focus();
+                        Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(inp, val);
+                        inp.dispatchEvent(new Event('input', { bubbles: true }));
+                        inp.dispatchEvent(new Event('change', { bubbles: true }));
+                        inp.blur();
+                    }
+                }
+                function sC(){
+                    const b = Array.from(document.querySelectorAll('button, div[role="button"]')).find(b => (b.innerText || '').toLowerCase().includes('vsela'));
+                    if(b) sT(b);
+                }
+                function fW(txt,lim,cb){
+                    let it=0;
+                    const int=setInterval(()=>{
+                        const b = Array.from(document.querySelectorAll('button, div[role="button"]')).find(b => (b.innerText || '').toLowerCase().includes(txt.toLowerCase()));
+                        if(b){ clearInterval(int); sT(b); if(cb) cb(); }
+                        else if(++it>lim){ clearInterval(int); bS.disabled=false; bS.innerText='REINTENTAR 🔄'; }
+                    },250);
+                }
+                function act() {
+                    let i = parseInt(L.getItem('prog_6') || '0');
+                    t.innerText = `Cuadro: ${i}/${tot}`;
+                    if (i === 0) { cV.innerText = "- - -"; bS.innerText = 'INICIAR ▶'; }
+                    else {
+                        let currLine = tda[i - 1], l_idx = 0, v = [];
+                        for (let g = 0; g < 6; g++) { v.push(g === mx ? '[' + pf[mx].join('.') + ']' : currLine[l_idx++]); }
+                        cV.innerText = v.join('-');
+                        if (i < tot) { bS.innerText = 'SIGUIENTE ▶'; }
+                        else { cV.innerText = "¡Fin!"; bS.innerText = 'FIN'; bS.disabled = true; }
+                    }
+                }
+                function fS(){
+                    let i=parseInt(L.getItem('prog_6')||'0');
+                    if(i<tot){
+                        bS.disabled=true; bS.innerText='...'; mC(i);
+                        setTimeout(()=>{
+                            sC();
+                            setTimeout(()=>{
+                                fW('confirm',35,()=>{ fW('acept',50,()=>{ L.setItem('prog_6',(i+1).toString()); bS.disabled=false; act(); }); });
+                            },250);
+                        },250);
+                        return true;
+                    }
+                    return false;
+                }
+                bS.onclick=()=>{ fS(); };
+                bR.onclick=()=>{ if(confirm("¿Cambiar combinaciones o unidades?")){ L.removeItem('p_6'); L.removeItem('max_6'); pD(); } };
+                act();
+            }
+            if(!m||!x){ pD(); }else{ arr(JSON.parse(m)); }
+        }
+    </script>
+</body>
+</html>
