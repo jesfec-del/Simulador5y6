@@ -92,21 +92,43 @@
                 arr(p);
             }
             function arr(pf){
-                let mx = -1;
-                const cT = () => pf.reduce((a, b) => a * b.length, 1);
-                if (cT() > 999) {
-                    let bc = 0, bi = -1;
-                    for (let h = 0; h < pf.length; h++) {
-                        let cc = cT() / pf[h].length;
-                        if (cc > bc && cc < 999) { bc = cc; bi = h; }
+                let combinacionesFijas = [];
+                let totalOriginal = pf.reduce((a, b) => a * b.length, 1);
+                
+                if (totalOriginal <= 999) {
+                    combinacionesFijas = [];
+                } else {
+                    let mejorProximidad = -1;
+                    let mejorMascara = 0;
+                    let n = pf.length;
+                    for (let i = 1; i < (1 << n); i++) {
+                        let totalConEstaMascara = 1;
+                        for (let j = 0; j < n; j++) {
+                            if (((i >> j) & 1) === 0) { totalConEstaMascara *= pf[j].length; }
+                        }
+                        if (totalConEstaMascara <= 999 && totalConEstaMascara > mejorProximidad) {
+                            mejorProximidad = totalConEstaMascara;
+                            mejorMascara = i;
+                        }
                     }
-                    if (bi !== -1) { mx = bi; alert('Optimizado INH: Carrera ' + (mx + 1)); }
+                    if (mejorMascara > 0) {
+                        for (let j = 0; j < n; j++) {
+                            if (((mejorMascara >> j) & 1) === 1) { combinacionesFijas.push(j); }
+                        }
+                    } else {
+                        combinacionesFijas = [];
+                    }
                 }
-                let tda = cI(pf, mx), tot = tda.length;
-                function cI(lX, mX) {
+                let totCalculado = pf.reduce((a, b, idx) => a * (combinacionesFijas.includes(idx) ? 1 : b.length), 1);
+                if (combinacionesFijas.length > 0) {
+                    let nombresCarreras = combinacionesFijas.map(idx => idx + 1).sort((a,b)=>a-b).join(', ');
+                    alert(`Optimización de Máxima Proximidad Activa\nTotal original: ${totalOriginal} cuadros.\nSe fijaron las carreras: ${nombresCarreras}\n¡Tu bot sellará exactamente ${totCalculado} cuadros!`);
+                }
+                let tda = cI(pf, combinacionesFijas), tot = tda.length;
+                function cI(lX, fX_List) {
                     let res = [[]];
                     for (let c = 0; c < lX.length; c++) {
-                        if (c === mX) continue;
+                        if (fX_List.includes(c)) continue;
                         let rv = [], b = lX[c];
                         for (let j = 0; j < res.length; j++) {
                             for (let x = 0; x < b.length; x++) {
@@ -118,7 +140,7 @@
                     return res;
                 }
                 let p=document.getElementById('p-flot');
-                if(p)p.remove();
+                if(p) p.remove();
                 p=document.createElement('div');
                 p.id='p-flot';
                 p.setAttribute('style','position:fixed!important;bottom:20px!important;right:20px!important;z-index:2147483647!important;background:#111!important;color:#fff!important;padding:12px!important;border-radius:10px!important;font-family:sans-serif!important;width:150px!important;border:2px solid #ffc200!important;');
@@ -171,8 +193,8 @@
                     for (let g = 0; g < 6; g++) {
                         let r = sR[g];
                         if (r) {
-                            if (g === mx) {
-                                pf[mx].forEach(cab => {
+                            if (combinacionesFijas.includes(g)) {
+                                pf[g].forEach(cab => {
                                     let btn = Array.from(r.querySelectorAll('button,div[role="button"]')).find(b => b.innerText.trim() === cab.toString());
                                     if (btn) sT(btn);
                                 });
@@ -185,11 +207,8 @@
                     }
                     let val = L.getItem('max_6') || "1", inp = document.querySelector('input[type="number"]');
                     if (inp) {
-                        inp.focus();
-                        Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(inp, val);
-                        inp.dispatchEvent(new Event('input', { bubbles: true }));
-                        inp.dispatchEvent(new Event('change', { bubbles: true }));
-                        inp.blur();
+                        inp.focus(); Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(inp, val);
+                        inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); inp.blur();
                     }
                 }
                 function sC(){
@@ -206,15 +225,14 @@
                 }
                 function act() {
                     let i = parseInt(L.getItem('prog_6') || '0');
-                    t.innerText = `Cuadro: ${i}/${tot}`;
-                    if (i === 0) { cV.innerText = "- - -"; bS.innerText = 'INICIAR ▶'; }
-                    else {
-                        let currLine = tda[i - 1], l_idx = 0, v = [];
-                        for (let g = 0; g < 6; g++) { v.push(g === mx ? '[' + pf[mx].join('.') + ']' : currLine[l_idx++]); }
-                        cV.innerText = v.join('-');
-                        if (i < tot) { bS.innerText = 'SIGUIENTE ▶'; }
-                        else { cV.innerText = "¡Fin!"; bS.innerText = 'FIN'; bS.disabled = true; }
-                    }
+                    t.innerText = `Cuadro: ${i + 1}/${tot}`;
+                    if (i >= tot) { cV.innerText = "¡Fin!"; bS.innerText = 'FIN'; bS.disabled = true; return; }
+                    let currLine = tda[i], l_idx = 0, v = [];
+                    for (let g = 0; g < 6; g++) { v.push(combinacionesFijas.includes(g) ? '[' + pf[g].join('.') + ']' : currLine[l_idx++]); }
+                    cV.innerText = v.join('-');
+                    if (i === 0 && L.getItem('prog_6') === null) { bS.innerText = 'INICIAR ▶'; } 
+                    else if (i < tot - 1) { bS.innerText = 'SIGUIENTE ▶'; } 
+                    else { bS.innerText = 'FINALIZAR ▶'; }
                 }
                 function fS(){
                     let i=parseInt(L.getItem('prog_6')||'0');
@@ -223,19 +241,4 @@
                         setTimeout(()=>{
                             sC();
                             setTimeout(()=>{
-                                fW('confirm',35,()=>{ fW('acept',50,()=>{ L.setItem('prog_6',(i+1).toString()); bS.disabled=false; act(); }); });
-                            },250);
-                        },250);
-                        return true;
-                    }
-                    return false;
-                }
-                bS.onclick=()=>{ fS(); };
-                bR.onclick=()=>{ if(confirm("¿Cambiar combinaciones o unidades?")){ L.removeItem('p_6'); L.removeItem('max_6'); pD(); } };
-                act();
-            }
-            if(!m||!x){ pD(); }else{ arr(JSON.parse(m)); }
-        }
-    </script>
-</body>
-</html>
+fW('confirm',35,()=>{ fW('acept',50,()=>{ L.setItem('prog_6',(i+1).toString()); bS.disabled=false; act(); }); });},250);},250);return true;}return false;}bS.onclick=()=>{ fS(); };bR.onclick=()=>{ if(confirm("¿Cambiar combinaciones o unidades?")){ L.removeItem('p_6'); L.removeItem('max_6'); pD(); } };act();}if(!m||!x){ pD(); }else{ arr(JSON.parse(m)); };
