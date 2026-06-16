@@ -20,9 +20,9 @@
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
         
-        /* ESTILO REALISTA: Botón Sellar deshabilitado en color tenue */
-        .btn-sellar { background: #ffc200; color: #000; transition: all 0.3s ease; }
-        .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.5; cursor: not-allowed; }
+        /* BOTÓN REALISTA: En gris tenue obligatorio al estar deshabilitado */
+        .btn-sellar { background: #ffc200; color: #000; transition: all 0.2s ease; }
+        .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.4 !important; cursor: not-allowed !important; }
         
         .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 280px; box-sizing: border-box; }
         .modal-simulado p { margin-bottom: 15px; font-size: 14px; }
@@ -40,7 +40,7 @@
 </head>
 <body>
 <div class="container">
-    <h2>Simulador de Sistema 5y6 <span style="color: #10b981; font-size:12px;">(MODO INH FIEL)</span></h2>
+    <h2>Simulador de Sistema 5y6 <span style="color: #10b981; font-size:12px;">(MODO INH REALISTA)</span></h2>
     <div class="input-group">
         <label>Unidades / Monto:</label>
         <input type="number" id="unidades-input" value="1" min="1">
@@ -48,7 +48,6 @@
     <div class="panel-juego" id="zona-interactiva">
         <div id="contenedor-filas"></div>
         <div class="acciones">
-            <!-- Arranca deshabilitado nativamente -->
             <button class="btn-main btn-sellar" id="sellar-btn" disabled>Sellar Cuadro</button>
         </div>
         <div id="consola-alerta" class="consola-log"></div>
@@ -89,23 +88,6 @@
     const ticketInfoText = document.getElementById('ticket-info-text');
     const sellarBtn = document.getElementById('sellar-btn');
 
-    // VALIDACIÓN INTERNA EN TIEMPO REAL
-    function verificarLineasCompletas() {
-        let filas = document.querySelectorAll('.fila-carrera');
-        let todasTienenSeleccion = true;
-        filas.forEach(f => {
-            let marcados = f.querySelectorAll('button.selected').length;
-            if (marcados === 0) todasTienenSeleccion = false;
-        });
-        sellarBtn.disabled = !todasTienenSeleccion;
-    }
-
-    function limpiarFormularioInterno() {
-        document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
-        consolaAlerta.style.display = 'none';
-        verificarLineasCompletas(); // Vuelve a bloquear el botón Sellar de inmediato
-    }
-
     for (let i = 1; i <= 6; i++) {
         let fila = document.createElement('div');
         fila.className = 'fila-carrera';
@@ -120,7 +102,7 @@
             btn.innerText = j;
             btn.onclick = () => {
                 btn.classList.toggle('selected');
-                verificarLineasCompletas(); // Valida cada vez que se hace un clic manual o del bot
+                verificarLineasCompletas();
             };
             group.appendChild(btn);
         }
@@ -128,6 +110,23 @@
         contenedor.appendChild(fila);
     }
 
+    function verificarLineasCompletas() {
+        let filas = document.querySelectorAll('.fila-carrera');
+        let todasTienenSeleccion = true;
+        filas.forEach(f => {
+            let marcados = f.querySelectorAll('button.selected').length;
+            if (marcados === 0) todasTienenSeleccion = false;
+        });
+        sellarBtn.disabled = !todasTienenSeleccion;
+    }
+
+    function limpiarFormularioInterno() {
+        document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
+        consolaAlerta.style.display = 'none';
+        verificarLineasCompletas(); 
+    }
+
+    // ELIMINADA LA ALERTA: Abre directo la confirmación porque confía en el bloqueo nativo
     sellarBtn.onclick = () => {
         consolaAlerta.style.display = 'none';
         let selecciones = [];
@@ -183,7 +182,6 @@
             tablaBody.insertBefore(tr, tablaBody.firstChild);
             ticketTemporal = null;
         }
-        // SE LIMPIA AUTOMÁTICAMENTE AL TERMINAR DE FORMA IMPLECABLE
         limpiarFormularioInterno();
     };
     document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión de ticket."); };
