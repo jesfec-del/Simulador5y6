@@ -37,22 +37,17 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>Simulador de Sistema 5y6 <span style="color: #ef4444; font-size:12px;">(MODO INESTABLE ACTIVO)</span></h2>
-    
     <div class="input-group">
         <label>Unidades / Monto:</label>
         <input type="number" id="unidades-input" value="1" min="1">
     </div>
-
     <div class="panel-juego" id="zona-interactiva">
         <div class="acciones" style="margin-bottom: 12px;">
             <button class="btn-main btn-limpiar" id="limpiar-btn">Limpiar Formulario</button>
         </div>
-
         <div id="contenedor-filas"></div>
-
         <div class="acciones">
             <button class="btn-main btn-sellar" id="sellar-btn">Sellar Cuadro</button>
         </div>
@@ -63,36 +58,24 @@
     <h3>Historial de Apuestas (Últimos 50 tickets)</h3>
     <table>
         <thead>
-            <tr>
-                <th>FECHA</th>
-                <th>TICKET</th>
-                <th>HIPÓDROMO</th>
-                <th>TIPO</th>
-                <th>SELECCIONES</th>
-                <th>MONTO</th>
-                <th>ESTADO</th>
-            </tr>
+            <tr><th>FECHA</th><th>TICKET</th><th>HIPÓDROMO</th><th>TIPO</th><th>SELECCIONES</th><th>MONTO</th><th>ESTADO</th></tr>
         </thead>
         <tbody id="tabla-body"></tbody>
     </table>
 </div>
-
 <div class="overlay" id="modal-overlay"></div>
-
 <div class="modal-simulado" id="modal-confirmar">
     <p style="font-weight: bold; color: #ffc200; margin-top:0;">Confirmación de Jugada</p>
     <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px; color:#34d399;"></div>
     <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
     <button id="confirmar-btn">Confirmar</button>
 </div>
-
 <div class="modal-simulado" id="modal-ticket-exitoso">
     <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
     <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
     <button class="btn-print" id="imprimir-btn">Imprimir</button>
     <button id="aceptar-btn">Aceptar</button>
 </div>
-
 <script>
     const contenedor = document.getElementById('contenedor-filas');
     const tablaBody = document.getElementById('tabla-body');
@@ -117,7 +100,8 @@
         }
         fila.append(titulo, group);
         contenedor.appendChild(fila);
-    }    const overlay = document.getElementById('modal-overlay');
+    }
+    const overlay = document.getElementById('modal-overlay');
     const modalConfirmar = document.getElementById('modal-confirmar');
     const modalTicketExitoso = document.getElementById('modal-ticket-exitoso');
     const resumenComb = document.getElementById('resumen-combinaciones');
@@ -157,19 +141,14 @@
 
     document.getElementById('confirmar-btn').onclick = () => {
         modalConfirmar.style.display = 'none';
-        
-        // --- MOTOR DE SIMULACIÓN DE INESTABILIDAD REAL ---
         let numeroAleatorio = Math.random();
         
-        // 1. Simular Caída de Conexión Total (5% de probabilidad)
         if (numeroAleatorio <= 0.05) {
             consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
             consolaAlerta.style.display = 'block';
-            // Dejamos el overlay bloqueado y no abrimos el modal de éxito. El bot se congelará aquí.
             return;
         }
 
-        // 2. Procesamiento normal con retraso aleatorio entre 0.5 y 3 segundos para imitar internet real
         let retrasoServidor = Math.floor(Math.random() * 2500) + 500; 
 
         setTimeout(() => {
@@ -187,7 +166,6 @@
                 estado: "PROCESADO"
             };
 
-            // Simulación de envío de datos por red que detectará el interceptor XHR del bot
             if (window.redTicketsInh) {
                 window.redTicketsInh.push(ticketTemporal);
             }
@@ -215,6 +193,10 @@
             tablaBody.insertBefore(tr, tablaBody.firstChild);
             ticketTemporal = null;
         }
+
+        // CORRECCIÓN: El simulador ahora limpia las casillas al dar Aceptar como la web real
+        document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
+        consolaAlerta.style.display = 'none';
     };
 
     document.getElementById('imprimir-btn').onclick = () => {
@@ -223,4 +205,3 @@
 </script>
 </body>
 </html>
-
