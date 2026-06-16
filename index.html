@@ -53,7 +53,6 @@
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
         
-        /* PANTALLA DE CARGA REALISTA */
         #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -100,7 +99,6 @@
     <button id="confirmar-btn">Confirmar</button>
 </div>
 
-<!-- NUEVO MODAL DE ESPERA DE CONEXIÓN -->
 <div class="modal-simulado" id="modal-conectando">
     <p style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
     <div class="spinner"></div>
@@ -136,9 +134,9 @@
             { carrera: 1, inscritos: 12, retirados: [3, 7] },
             { carrera: 2, inscritos: 10, retirados: [5] },
             { carrera: 3, inscritos: 14, retirados: [] },
-            { carrera: 4, inscritos: 11, retirados: [2, 9] },
+            { carrera: 4, inscritos: 11, retirados: [1, 9] },
             { carrera: 5, inscritos: 15, retirados: [11] },
-            { carrera: 6, inscritos: 13, retirados: [4] }
+            { carrera: 6, inscritos: 13, retirados: [2] }
         ];
         renderizarTablero();
     }
@@ -191,11 +189,13 @@
 
     function limpiarFormularioInterno() {
         document.querySelectorAll('.grupo-botones button:not(.retirado)').forEach(b => b.classList.remove('selected'));
-        consolaAlerta.style.setProperties ? consolaAlerta.style.setProperty('display', 'none') : consolaAlerta.style.display = 'none';
+        consolaAlerta.innerText = ""; // SOLUCIÓN: Limpia el texto residual
+        consolaAlerta.style.display = 'none';
         verificarLineasCompletas(); 
     }
 
     sellarBtn.onclick = () => {
+        consolaAlerta.innerText = ""; // SOLUCIÓN: Limpia el texto residual
         consolaAlerta.style.display = 'none';
         let selecciones = [];
         let filas = document.querySelectorAll('.fila-carrera');
@@ -219,19 +219,18 @@
     };
 
     confirmarBtn.onclick = () => {
-        // Cierra confirmación y abre pantalla de carga conectando al INH
         modalConfirmar.style.display = 'none';
         modalConectando.style.display = 'block';
+        consolaAlerta.innerText = ""; // SOLUCIÓN: Limpia el texto residual
         consolaAlerta.style.display = 'none';
         
-        let retrasoServidor = Math.floor(Math.random() * 6000) + 2000; 
-        let esFalla = Math.random() <= 0.20; // Probabilidad de falla aumentada para pruebas
+        let retrasoServidor = Math.floor(Math.random() * 4000) + 1500; 
+        let esFalla = Math.random() <= 0.20; 
 
         setTimeout(() => {
             modalConectando.style.display = 'none';
 
             if (esFalla) {
-                // Al fallar se muestra la alerta y la jugada se mantiene en pantalla intacta
                 consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
                 consolaAlerta.style.display = 'block';
                 overlay.style.display = 'none';
