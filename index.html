@@ -138,13 +138,14 @@
     const tablaBody = document.getElementById('tabla-body');
 
     function inicializarJornadaHipica() {
+        /* ARREGLADO: Listas de retirados inicializadas correctamente como arreglos válidos [] */
         estructuraCarreras = [
-            { carrera: 1, inscritos: 12, retirados: },
-            { carrera: 2, inscritos: 10, retirados: },
+            { carrera: 1, inscritos: 12, retirados: [3, 7] },
+            { carrera: 2, inscritos: 10, retirados: [5] },
             { carrera: 3, inscritos: 14, retirados: [] },
-            { carrera: 4, inscritos: 11, retirados: },
-            { carrera: 5, inscritos: 15, retirados: },
-            { carrera: 6, inscritos: 13, retirados: }
+            { carrera: 4, inscritos: 11, retirados: [2, 9] },
+            { carrera: 5, inscritos: 15, retirados: [11] },
+            { carrera: 6, inscritos: 13, retirados: [4] }
         ];
         renderizarTablero();
     }
@@ -233,7 +234,6 @@
             modalConectando.style.display = 'none';
 
             if (esFalla) {
-                /* REGRESO INTEGRAL DE VENTANA: Muestra error sin tocar la ventana de confirmación previa */
                 modalErrorInh.style.display = 'block';
                 return; 
             }
@@ -259,7 +259,6 @@
         }, retrasoServidor);
     };
 
-    /* COMPORTAMIENTO FIEL AL INH: Cierra error y te re-presenta inmediatamente el cuadro de confirmación */
     document.getElementById('error-aceptar-btn').onclick = () => {
         modalErrorInh.style.display = 'none';
         confirmarBtn.disabled = false;
