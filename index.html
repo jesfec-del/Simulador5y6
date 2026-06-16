@@ -15,11 +15,37 @@
         .fila-carrera { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; background: #222; padding: 6px; border-radius: 4px; }
         .carrera-titulo { width: 100px; font-weight: bold; font-size: 11px; color: #aaa; line-height: 1.2; }
         .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-        .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #555; background: #333; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .grupo-botones button.selected { background: #10b981; border-color: #10b981; }
         
-        /* ESTILO PARA RETIRADOS: Botón opaco, tachado y bloqueado */
-        .grupo-botones button.retirado { background: #3f1a1a !important; color: #ef4444 !important; border-color: #7f1d1d !important; text-decoration: line-through; opacity: 0.5; cursor: not-allowed !important; }
+        /* BOTONES CON IDENTIDAD DE COLOR FIJA (MANTILLAS INH) */
+        .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 12px; transition: transform 0.1s ease; }
+        
+        /* ESTADOS DE SELECCIÓN EXCLUSIVOS POR COLOR */
+        .grupo-botones button.selected { border: 2px solid #10b981 !important; transform: scale(1.08); box-shadow: 0 0 5px #10b981; }
+        
+        /* CLASES DE COLORES FIJOS ESTÁNDAR (PASTELES Y CORPORATIVOS REALEZA) */
+        .m-1 { background-color: #f3f4f6 !important; color: #111827 !important; } /* Blanco */
+        .m-2 { background-color: #fef08a !important; color: #111827 !important; } /* Amarillo */
+        .m-3 { background-color: #fca5a5 !important; color: #111827 !important; } /* Rojo */
+        .m-4 { background-color: #93c5fd !important; color: #111827 !important; } /* Azul */
+        .m-5 { background-color: #86efac !important; color: #111827 !important; } /* Verde */
+        .m-6 { background-color: #374151 !important; color: #f9fafb !important; } /* Negro */
+        .m-7 { background-color: #fed7aa !important; color: #111827 !important; } /* Naranja */
+        .m-8 { background-color: #fbcfe8 !important; color: #111827 !important; } /* Rosado */
+        .m-9 { background-color: #a5f3fc !important; color: #111827 !important; } /* Turquesa */
+        .m-10 { background-color: #d7ccc8 !important; color: #111827 !important; } /* Marrón */
+        .m-11 { background-color: #e9d5ff !important; color: #111827 !important; } /* Morado */
+        .m-12 { background-color: #ccffcc !important; color: #111827 !important; } /* Verde Claro */
+        .m-13 { background-color: #4e342e !important; color: #f9fafb !important; } /* Marrón Oscuro */
+        .m-14 { background-color: #cfd8dc !important; color: #111827 !important; } /* Gris Platino */
+        .m-15 { background-color: #fff9c4 !important; color: #111827 !important; } /* Crema */
+        .m-16 { background-color: #0d47a1 !important; color: #f9fafb !important; } /* Azul Marino */
+        .m-17 { background-color: #ad1457 !important; color: #f9fafb !important; } /* Rubí */
+        .m-18 { background-color: #004d40 !important; color: #f9fafb !important; } /* Jade */
+        .m-19 { background-color: #e65100 !important; color: #f9fafb !important; } /* Ámbar */
+        .m-20 { background-color: #263238 !important; color: #f9fafb !important; } /* Grafito */
+
+        /* ESTILO RETIRADO AJUSTADO */
+        .grupo-botones button.retirado { background-color: #222 !important; color: #555 !important; border-color: #333 !important; text-decoration: line-through; opacity: 0.3; cursor: not-allowed !important; box-shadow: none !important; transform: none !important; }
         
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
@@ -77,7 +103,8 @@
     <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
     <button class="btn-print" id="imprimir-btn">Imprimir</button>
     <button id="aceptar-btn">Aceptar</button>
-</div><script>
+</div>
+<script>
     const contenedor = document.getElementById('contenedor-filas');
     const tablaBody = document.getElementById('tabla-body');
     const consolaAlerta = document.getElementById('consola-alerta');
@@ -92,7 +119,6 @@
     const confirmarBtn = document.getElementById('confirmar-btn');
     const cancelarBtn = document.getElementById('cancelar-btn');
 
-    // Generador matemático de distribución Normal (Campana de Gauss) usando Box-Muller
     function generarGauss(media, desviacion) {
         let u1 = 0, u2 = 0;
         while(u1 === 0) u1 = Math.random(); 
@@ -101,45 +127,59 @@
         return z * desviacion + media;
     }
 
-    // Inicializar el tablero simulando una jornada hípica dinámica
     function inicializarJornadaHipica() {
         contenedor.innerHTML = "";
         
+        // Estructurar cantidad de inscritos por carrera usando Gauss (Media 10, Desv 2.5)
+        let estructuraCarreras = [];
         for (let i = 1; i <= 6; i++) {
-            // Gauss para inscritos: Media 10, Desviación 2.5. Límites estrictos [4, 20]
             let inscritos = Math.round(generarGauss(10, 2.5));
             inscritos = Math.max(4, Math.min(20, inscritos));
+            estructuraCarreras.push({ carrera: i, inscritos: inscritos, retirados: [] });
+        }
 
-            // Gauss para retirados: Media 1.5, Desviación 1.2. Límites máximos lógicos según inscritos
-            let retiradosCant = Math.round(generarGauss(1.5, 1.2));
-            retiradosCant = Math.max(0, Math.min(8, retiradosCant));
-            if (inscritos - retiradosCant < 3) retiradosCant = inscritos - 3; // Evitar carreras inviables
+        // REGLA GLOBAL DE RETIRADOS: Calculados por jornada completa, no por carrera individual
+        let totalRetiradosJornada = Math.round(generarGauss(2.5, 1.4)); 
+        totalRetiradosJornada = Math.max(0, Math.min(8, totalRetiradosJornada));
 
-            // Determinar qué números específicos serán retirados de forma aleatoria
-            let indicesRetirados = new Set();
-            while(indicesRetirados.size < retiradosCant) {
-                let numeroAleatorio = Math.floor(Math.random() * inscritos) + 1;
-                indicesRetirados.add(numeroAleatorio);
+        let retiradosAsignados = 0;
+        let intentos = 0;
+        while (retiradosAsignados < totalRetiradosJornada && intentos < 100) {
+            intentos++;
+            let carreraAzar = estructuraCarreras[Math.floor(Math.random() * 6)];
+            // Evitar acumular demasiados retirados en una misma carrera corta
+            if (carreraAzar.retirados.length < 2 && carreraAzar.inscritos > 4) {
+                let numeroCaballoAzar = Math.floor(Math.random() * carreraAzar.inscritos) + 1;
+                if (!carreraAzar.retirados.includes(numeroCaballoAzar)) {
+                    carreraAzar.retirados.push(numeroCaballoAzar);
+                    retiradosAsignados++;
+                }
             }
+        }
 
+        // Renderizar el tablero aplicando colores estables por número
+        estructuraCarreras.forEach(c => {
             let fila = document.createElement('div');
             fila.className = 'fila-carrera';
             
             let titulo = document.createElement('div');
             titulo.className = 'carrera-titulo';
-            titulo.innerHTML = `Carrera ${i}:<br><span style="font-size:9px;color:#888;">(${inscritos} Ins / ${retiradosCant} Ret)</span>`;
+            titulo.innerHTML = `Carrera ${c.carrera}:<br><span style="font-size:9px;color:#888;">(${c.inscritos} Ins / ${c.retirados.length} Ret)</span>`;
             
             let group = document.createElement('div');
             group.className = 'grupo-botones';
             
-            for (let j = 1; j <= inscritos; j++) {
+            for (let j = 1; j <= c.inscritos; j++) {
                 let btn = document.createElement('button');
                 btn.type = 'button';
                 btn.innerText = j;
                 
-                if (indicesRetirados.has(j)) {
+                // ASIGNACIÓN FIJA DE COLOR: El número de caballo dictamina su color invariablemente
+                btn.classList.add(`m-${j}`);
+                
+                if (c.retirados.includes(j)) {
                     btn.classList.add('retirado');
-                    btn.disabled = true; // El operador INH no puede seleccionar caballos retirados
+                    btn.disabled = true;
                 } else {
                     btn.onclick = () => {
                         btn.classList.toggle('selected');
@@ -150,7 +190,7 @@
             }
             fila.append(titulo, group);
             contenedor.appendChild(fila);
-        }
+        });
         verificarLineasCompletas();
     }
 
@@ -246,9 +286,7 @@
     };
     document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión de ticket."); };
 
-    // Ejecución inicial al cargar la página para simular los caballos de la jornada
     window.onload = inicializarJornadaHipica;
 </script>
 </body>
 </html>
-
