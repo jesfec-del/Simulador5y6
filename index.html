@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Oficial 5y6</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; padding: 15px; margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; margin-bottom: 20px; }
+        body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; padding: 10px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; }
         h2 { text-align: center; color: #ffc200; margin-top: 0; font-size: 20px; }
         .input-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
         .input-group label { font-weight: bold; font-size: 14px; }
@@ -15,7 +15,7 @@
         .fila-carrera { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; background: #222; padding: 6px; border-radius: 4px; }
         .carrera-titulo { width: 80px; font-weight: bold; font-size: 13px; color: #aaa; }
         .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-        .grupo-botones button { width: 30px; height: 30px; font-weight: bold; border: 1px solid #555; background: #333; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; padding: 0; }
+        .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #555; background: #333; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .grupo-botones button.selected { background: #10b981; border-color: #10b981; }
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
@@ -23,16 +23,14 @@
         .btn-sellar { background: #ffc200; color: #000; }
         .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 280px; box-sizing: border-box; }
         .modal-simulado p { margin-bottom: 15px; font-size: 14px; }
-        .modal-simulado button { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 85px; font-size: 12px; }
+        .modal-simulado button { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 85px; }
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
-        
-        /* CONTENEDOR EXCLUSIVO PARA EL HISTORIAL DEBAJO DE TODO */
-        .seccion-reporte-inh { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; overflow-x: auto; display: block !important; }
+        .seccion-reporte-inh { max-width: 600px; margin: 20px auto 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; overflow-x: auto; }
         .seccion-reporte-inh h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffc200; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; color: #e4e4e7; }
-        th { background: #111; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; text-transform: uppercase; }
-        td { padding: 8px; border-bottom: 1px solid #333; white-space: pre-line; vertical-align: middle; }
+        th { background: #111; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; }
+        td { padding: 8px; border-bottom: 1px solid #333; white-space: pre-line; }
         tr:nth-child(even) { background: #1e1e22; }
         .status-perdedor { color: #f43f5e; font-weight: bold; }
     </style>
@@ -59,8 +57,6 @@
         </div>
     </div>
 </div>
-
-<!-- TABLA INDEPENDIENTE EN LA BASE DE LA PÁGINA (ESTILO SECCIÓN APUESTAS INH) -->
 <div class="seccion-reporte-inh">
     <h3>Historial de Apuestas (Últimos 50 tickets)</h3>
     <table>
@@ -76,12 +72,13 @@
             </tr>
         </thead>
         <tbody id="tabla-body">
-            <!-- Los renglones se inyectarán de manera limpia aquí -->
+            <!-- Las filas se insertarán de forma dinámica aquí abajo -->
         </tbody>
     </table>
 </div>
 
 <div class="overlay" id="modal-overlay"></div>
+
 <div class="modal-simulado" id="modal-confirmar">
     <p style="font-weight: bold; color: #ffc200; margin-top:0;">Confirmación de Jugada</p>
     <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px; color:#34d399;"></div>
@@ -150,7 +147,7 @@
         }
 
         if (carrerasValidas < 6) {
-            console.log("Simulador: Formulario vacío o incompleto.");
+            console.log("Simulador: Formulario incompleto o vacío.");
             return; 
         }
 
@@ -168,7 +165,7 @@
         modalConfirmar.style.display = 'none';
 
         if (Math.random() < 0.03) { 
-            console.log("Simulador: Error de red simulado.");
+            console.log("Simulador: Error de red forzado.");
             return; 
         }
 
@@ -219,7 +216,6 @@
                 <td>${ticketTemporal.monto}</td>
                 <td class="status-perdedor">${ticketTemporal.estado}</td>
             `;
-            // Insertar arriba en el cuerpo de la tabla independiente para verlo reflejado de inmediato
             tablaBody.insertBefore(row, tablaBody.firstChild);
             
             if (tablaBody.children.length > 50) {
