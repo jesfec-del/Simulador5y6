@@ -21,10 +21,10 @@
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; }
         .btn-limpiar { background: #ef4444; color: white; }
         .btn-sellar { background: #ffc200; color: #000; }
-        .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 25px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 250px; }
-        .modal-simulado p { margin-bottom: 20px; font-size: 16px; }
-        .modal-simulado button { padding: 8px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; }
-        .btn-print { background: #4b5563 !important; }
+        .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 25px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 280px; }
+        .modal-simulado p { margin-bottom: 15px; font-size: 15px; }
+        .modal-simulado button { padding: 8px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 90px; }
+        .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
     </style>
 </head>
@@ -52,11 +52,16 @@
 </div>
 
 <div class="overlay" id="modal-overlay"></div>
+
+<!-- 1ra Ventana: Cuadro de diálogo de confirmación con el resumen y los botones Confirmar / Cancelar -->
 <div class="modal-simulado" id="modal-confirmar">
-    <p>¿Está seguro de procesar esta jugada?</p>
+    <p style="font-weight: bold; color: #ffc200;">Confirmación de Jugada</p>
+    <p id="resumen-combinaciones" style="font-size: 13px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 100px; overflow-y: auto;"></p>
+    <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
     <button id="confirmar-btn">Confirmar</button>
 </div>
 
+<!-- 2da Ventana: Diálogo final de éxito con Imprimir / Aceptar -->
 <div class="modal-simulado" id="modal-ticket-exitoso">
     <p style="color: #10b981; font-weight: bold;">✔ Operación Exitosa</p>
     <p id="ticket-info-text" style="font-size: 13px; font-family: monospace;"></p>
@@ -92,35 +97,50 @@
     const modalConfirmar = document.getElementById('modal-confirmar');
     const modalTicket = document.getElementById('modal-ticket-exitoso');
     const confirmarBtn = document.getElementById('confirmar-btn');
+    const cancelarBtn = document.getElementById('cancelar-btn');
     const aceptarBtn = document.getElementById('aceptar-btn');
     const imprimirBtn = document.getElementById('imprimir-btn');
     const ticketInfoText = document.getElementById('ticket-info-text');
+    const resumenCombinaciones = document.getElementById('resumen-combinaciones');
 
     limpiarBtn.onclick = () => {
         document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
     };
 
+    // Al hacer clic en Sellar Cuadro se ejecuta la validación estricta del tablero de juego
     sellarBtn.onclick = () => {
-        // VALIDACIÓN DEL INH REAL: Verificar que haya mínimo 1 caballo por carrera seleccionado
         let carrerasValidas = 0;
+        let jugadaActual = [];
+        
         for (let i = 0; i < 6; i++) {
-            let seleccionados = contenedor.children[i].querySelectorAll('.grupo-botones button.selected').length;
-            if (seleccionados > 0) { carrerasValidas++; }
+            let seleccionados = Array.from(contenedor.children[i].querySelectorAll('.grupo-botones button.selected')).map(b => b.innerText);
+            if (seleccionados.length > 0) { 
+                carrerasValidas++; 
+                jugadaActual.push(`C${i+8}(${seleccionados.join(',')})`);
+            }
         }
 
-        // Si falta alguna carrera por marcar, el botón se bloquea silenciosamente y no abre el modal
+        // Si falta alguna carrera por marcar (tablero vacío o incompleto), se bloquea la acción por completo
         if (carrerasValidas < 6) {
-            console.log("Simulador: Bloqueado. Debes seleccionar al menos un caballo en las 6 carreras.");
+            console.log("Simulador: Acción denegada. El tablero no cumple con un caballo por carrera.");
             return; 
         }
 
+        // Si es válido, se monta el resumen de las combinaciones y se abre la ventana con Confirmar y Cancelar
+        resumenCombinaciones.innerText = jugadaActual.join('\n');
         overlay.style.display = 'block';
         modalConfirmar.style.display = 'block';
+    };
+
+    cancelarBtn.onclick = () => {
+        modalConfirmar.style.display = 'none';
+        overlay.style.display = 'none';
     };
 
     confirmarBtn.onclick = () => {
         modalConfirmar.style.display = 'none';
 
+        // 3% de probabilidad de que falle la transmisión de datos y se congele
         if (Math.random() < 0.03) { return; }
 
         let jugadaActual = [];
@@ -153,11 +173,12 @@
         }
     };
 
-    imprimirBtn.onclick = () => { console.log("Simulador: Clic en Imprimir."); };
+    imprimirBtn.onclick = () => { console.log("Simulador: Imprimir."); };
 
     aceptarBtn.onclick = () => {
         modalTicket.style.display = 'none';
         overlay.style.display = 'none';
+        // Limpieza total del tablero: Garantiza que el próximo intento requiera obligatoriamente nuevas selecciones
         document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
     };
 </script>
