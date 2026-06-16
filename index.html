@@ -125,7 +125,6 @@ let estructuraCarreras = [];
     let loopTextosLoading = null;
     window.redTicketsInh = window.redTicketsInh || [];
     
-    /* BLINDAJE ABSOLUTO: Contador estricto de clics en Confirmar para garantizar la falla inicial */
     let intentosGlobales = 0;
 
     const contenedor = document.getElementById('contenedor-filas');
@@ -144,13 +143,14 @@ let estructuraCarreras = [];
     const loadingSubtext = document.getElementById('loading-subtext');
 
     function inicializarJornadaHipica() {
+        /* RECTIFICADO: Listas de retirados rellenas por completo con arreglos de números válidos para evitar SyntaxError */
         estructuraCarreras = [
-            { carrera: 1, inscritos: 12, retirados: },
-            { carrera: 2, inscritos: 10, retirados: },
-            { carrera: 3, inscritos: 14, retirados: [] },
-            { carrera: 4, inscritos: 11, retirados: },
-            { carrera: 5, inscritos: 15, retirados: },
-            { carrera: 6, inscritos: 13, retirados: }
+            { carrera: 1, inscritos: 12, retirados: [3, 8] },
+            { carrera: 2, inscritos: 10, retirados: [5] },
+            { carrera: 3, inscritos: 14, retirados: [2, 11] },
+            { carrera: 4, inscritos: 11, retirados: [6] },
+            { carrera: 5, inscritos: 15, retirados: [9, 14] },
+            { carrera: 6, inscritos: 13, retirados: [4] }
         ];
         renderizarTablero();
     }
@@ -250,7 +250,6 @@ let estructuraCarreras = [];
         
         let retrasoServidor = Math.floor(Math.random() * 1500) + 3200; 
         
-        /* REGLA MATEMÁTICA INVIOLABLE: Si el contador es cero, es una falla obligatoria */
         let esFalla = false;
         if (intentosGlobales === 0) {
             esFalla = true;
@@ -258,7 +257,6 @@ let estructuraCarreras = [];
             esFalla = Math.random() <= 0.20;
         }
         
-        /* El contador de intentos se incrementa inmediatamente pase lo que pase */
         intentosGlobales++;
 
         setTimeout(() => {
