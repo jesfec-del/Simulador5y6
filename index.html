@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Oficial 5y6 - Inestable</title>
+    <title>Simulador Oficial 5y6 - Fiel a la Realidad</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; padding: 10px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; }
@@ -19,7 +19,6 @@
         .grupo-botones button.selected { background: #10b981; border-color: #10b981; }
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
-        .btn-limpiar { background: #ef4444; color: white; }
         .btn-sellar { background: #ffc200; color: #000; }
         .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 280px; box-sizing: border-box; }
         .modal-simulado p { margin-bottom: 15px; font-size: 14px; }
@@ -32,21 +31,17 @@
         th { background: #111; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; }
         td { padding: 8px; border-bottom: 1px solid #333; white-space: pre-line; }
         tr:nth-child(even) { background: #1e1e22; }
-        .status-perdedor { color: #f43f5e; font-weight: bold; }
         .consola-log { background: #000; color: #ef4444; font-family: monospace; padding: 6px; font-size: 11px; margin-top: 10px; border-radius: 4px; border: 1px solid #ef4444; display: none; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Simulador de Sistema 5y6 <span style="color: #ef4444; font-size:12px;">(MODO INESTABLE ACTIVO)</span></h2>
+    <h2>Simulador de Sistema 5y6 <span style="color: #ef4444; font-size:12px;">(MODO REALISTA)</span></h2>
     <div class="input-group">
         <label>Unidades / Monto:</label>
         <input type="number" id="unidades-input" value="1" min="1">
     </div>
     <div class="panel-juego" id="zona-interactiva">
-        <div class="acciones" style="margin-bottom: 12px;">
-            <button class="btn-main btn-limpiar" id="limpiar-btn">Limpiar Formulario</button>
-        </div>
         <div id="contenedor-filas"></div>
         <div class="acciones">
             <button class="btn-main btn-sellar" id="sellar-btn">Sellar Cuadro</button>
@@ -90,7 +85,6 @@
         titulo.innerText = `Carrera ${i}:`;
         let group = document.createElement('div');
         group.className = 'grupo-botones';
-        
         for (let j = 1; j <= 10; j++) {
             let btn = document.createElement('button');
             btn.type = 'button';
@@ -107,28 +101,26 @@
     const resumenComb = document.getElementById('resumen-combinaciones');
     const ticketInfoText = document.getElementById('ticket-info-text');
 
-    document.getElementById('limpiar-btn').onclick = () => {
+    // Función interna privada para emular la limpieza automática del sistema real
+    function limpiarFormularioInterno() {
         document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
         consolaAlerta.style.display = 'none';
-    };
+    }
 
     document.getElementById('sellar-btn').onclick = () => {
         consolaAlerta.style.display = 'none';
         let selecciones = [];
         let filas = document.querySelectorAll('.fila-carrera');
         let completa = true;
-
         filas.forEach((f, idx) => {
             let s = Array.from(f.querySelectorAll('button.selected')).map(b => b.innerText);
             if(s.length === 0) completa = false;
             selecciones.push(`C${idx+1}(${s.join(',')})`);
         });
-
         if(!completa) {
             alert("Debes seleccionar al menos un caballo por carrera.");
             return;
         }
-
         resumenComb.innerText = selecciones.join(' \n');
         overlay.style.display = 'block';
         modalConfirmar.style.display = 'block';
@@ -142,20 +134,16 @@
     document.getElementById('confirmar-btn').onclick = () => {
         modalConfirmar.style.display = 'none';
         let numeroAleatorio = Math.random();
-        
         if (numeroAleatorio <= 0.05) {
             consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
             consolaAlerta.style.display = 'block';
             return;
         }
-
         let retrasoServidor = Math.floor(Math.random() * 2500) + 500; 
-
         setTimeout(() => {
             let numTicket = Math.floor(100000 + Math.random() * 900000);
             let fechaActual = new Date().toLocaleString();
             let monto = (document.getElementById('unidades-input').value || 1) * 100;
-
             ticketTemporal = {
                 fecha: fechaActual,
                 ticket: numTicket.toString(),
@@ -165,11 +153,7 @@
                 monto: `${monto} Bsf`,
                 estado: "PROCESADO"
             };
-
-            if (window.redTicketsInh) {
-                window.redTicketsInh.push(ticketTemporal);
-            }
-
+            if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
             ticketInfoText.innerText = `Ticket: # ${numTicket}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
@@ -178,30 +162,16 @@
     document.getElementById('aceptar-btn').onclick = () => {
         modalTicketExitoso.style.display = 'none';
         overlay.style.display = 'none';
-
         if (ticketTemporal) {
             let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${ticketTemporal.fecha}</td>
-                <td>${ticketTemporal.ticket}</td>
-                <td>${ticketTemporal.hipodromo}</td>
-                <td>${ticketTemporal.tipo}</td>
-                <td>${ticketTemporal.selecciones}</td>
-                <td>${ticketTemporal.monto}</td>
-                <td><span style="color:#10b981; font-weight:bold;">${ticketTemporal.estado}</span></td>
-            `;
+            tr.innerHTML = `<td>${ticketTemporal.fecha}</td><td>${ticketTemporal.ticket}</td><td>${ticketTemporal.hipodromo}</td><td>${ticketTemporal.tipo}</td><td>${ticketTemporal.selecciones}</td><td>${ticketTemporal.monto}</td><td><span style="color:#10b981; font-weight:bold;">${ticketTemporal.estado}</span></td>`;
             tablaBody.insertBefore(tr, tablaBody.firstChild);
             ticketTemporal = null;
         }
-
-        // CORRECCIÓN: El simulador ahora limpia las casillas al dar Aceptar como la web real
-        document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
-        consolaAlerta.style.display = 'none';
+        // SE LIMPIA SOLO AL CONFIRMAR EL RECIBO EXULSIVAMENTE
+        limpiarFormularioInterno();
     };
-
-    document.getElementById('imprimir-btn').onclick = () => {
-        alert("Simulación de impresión de ticket.");
-    };
+    document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión de ticket."); };
 </script>
 </body>
 </html>
