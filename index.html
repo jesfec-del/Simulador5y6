@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Oficial 5y6 - Entorno Real</title>
+    <title>Simulador Oficial 5y6</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; }
@@ -27,13 +27,13 @@
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
         
-        /* Contenedor del Historial idéntico al INH */
-        .historial-contenedor { margin-top: 25px; background: #2a2a2a; padding: 10px; border-radius: 8px; border: 1px solid #444; overflow-x: auto; }
-        .historial-contenedor h3 { margin-top: 0; font-size: 15px; color: #ffc200; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; color: #e4e4e7; min-width: 500px; }
-        th { background: #18181b; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #27272a; }
-        td { padding: 8px; border-bottom: 1px solid #27272a; white-space: pre-line; }
-        tr:nth-child(even) { background: #222226; }
+        /* HISTORIAL EXACTO ABAJO DEL BOTÓN SELLAR */
+        .seccion-historial-real { margin-top: 20px; border-top: 2px solid #444; padding-top: 15px; }
+        .seccion-historial-real h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffc200; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; color: #e4e4e7; }
+        th { background: #111; padding: 6px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; }
+        td { padding: 6px; border-bottom: 1px solid #333; white-space: pre-line; }
+        tr:nth-child(even) { background: #1e1e22; }
         .status-perdedor { color: #f43f5e; font-weight: bold; }
     </style>
 </head>
@@ -57,27 +57,27 @@
         <div class="acciones">
             <button class="btn-main btn-sellar" id="sellar-btn">Sellar Cuadro</button>
         </div>
-    </div>
-
-    <!-- Sección de la Tabla del Historial del INH -->
-    <div class="historial-contenedor">
-        <h3>Historial de Apuestas Recientes</h3>
-        <table id="tabla-tickets">
-            <thead>
-                <tr>
-                    <th>FECHA</th>
-                    <th>TICKET</th>
-                    <th>HIPÓDROMO</th>
-                    <th>TIPO</th>
-                    <th>SELECCIONES</th>
-                    <th>MONTO</th>
-                    <th>ESTADO</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-body">
-                <!-- Los tickets generados se irán insertando aquí abajo en vivo -->
-            </tbody>
-        </table>
+        
+        <!-- LA TABLA AHORA NACE DIRECTAMENTE ABAJO DEL BOTÓN SELLAR CUADRO -->
+        <div class="seccion-historial-real">
+            <h3>Historial de Apuestas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>FECHA</th>
+                        <th>TICKET</th>
+                        <th>HIPÓDROMO</th>
+                        <th>TIPO</th>
+                        <th>SELECCIONES</th>
+                        <th>MONTO</th>
+                        <th>ESTADO</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    <!-- Fila tras fila se pintarán aquí de forma secuencial -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -100,7 +100,7 @@
 <script>
     const contenedor = document.getElementById('contenedor-filas');
     const tablaBody = document.getElementById('tabla-body');
-    let ticketTemporal = null; // Almacén seguro del ticket en curso
+    let ticketTemporal = null;
 
     for (let i = 1; i <= 6; i++) {
         let fila = document.createElement('div');
@@ -108,17 +108,17 @@
         let titulo = document.createElement('div');
         titulo.className = 'carrera-titulo';
         titulo.innerText = `Carrera ${i}:`;
-        let grupo = document.createElement('div');
-        grupo.className = 'grupo-botones';
+        let group = document.createElement('div');
+        group.className = 'grupo-botones';
         
         for (let j = 1; j <= 10; j++) {
             let btn = document.createElement('button');
             btn.type = 'button';
             btn.innerText = j;
             btn.onclick = () => btn.classList.toggle('selected');
-            grupo.appendChild(btn);
+            group.appendChild(btn);
         }
-        fila.append(titulo, grupo);
+        fila.append(titulo, group);
         contenedor.appendChild(fila);
     }
 
@@ -150,9 +150,8 @@
             }
         }
 
-        // CONTROL ESTRICTO: Si está vacío, se frena en seco y no abre absolutamente nada
         if (carrerasValidas < 6) {
-            console.log("Simulador: Operación denegada. El formulario está vacío o incompleto.");
+            console.log("Simulador: Formulario vacío o incompleto.");
             return; 
         }
 
@@ -169,9 +168,8 @@
     confirmarBtn.onclick = () => {
         modalConfirmar.style.display = 'none';
 
-        // 3% de probabilidad de caída real de internet (se congela y no genera ticket)
         if (Math.random() < 0.03) { 
-            console.log("Simulador: Error de red provocado. La interfaz no responderá.");
+            console.log("Simulador: Error de red simulado.");
             return; 
         }
 
@@ -186,10 +184,19 @@
         
         modalTicket.style.display = 'block';
 
-        // Estructura oficial del ticket capturado
         ticketTemporal = {
             fecha: new Date().toLocaleDateString() + "\n" + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).toLowerCase(),
             ticket: numTicket,
             hipodromo: "La Rinconada",
             tipo: "5 Y 6",
             selecciones: jugadaActual.join(' '),
+            monto: (parseFloat(document.getElementById('unidades-input').value) * 150).toFixed(2),
+            estado: "PERDEDOR"
+        };
+
+        if (window.interceptorActivado && window.redTicketsInh) {
+            window.redTicketsInh.push(ticketTemporal);
+            setTimeout(() => {
+                window.ticketDetectado = true;
+                window.dispatchEvent(new CustomEvent('ticketSimuladoExitoso'));
+}, 300);}};imprimirBtn.onclick = () => {};aceptarBtn.onclick = () => {modalTicket.style.display = 'none';overlay.style.display = 'none';if (ticketTemporal) {let row = document.createElement('tr');row.innerHTML = <td>${ticketTemporal.fecha}</td> <td style="font-weight:bold;">${ticketTemporal.ticket}</td> <td>${ticketTemporal.hipodromo}</td> <td>${ticketTemporal.tipo}</td> <td style="color:#a7f3d0;">${ticketTemporal.selecciones}</td> <td>${ticketTemporal.monto}</td> <td class="status-perdedor">${ticketTemporal.estado}</td>;// Insertar arriba para ver los nuevos primero debajo del botóntablaBody.insertBefore(row, tablaBody.firstChild);if (tablaBody.children.length > 50) {tablaBody.removeChild(tablaBody.lastChild);}ticketTemporal = null;}document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));};
