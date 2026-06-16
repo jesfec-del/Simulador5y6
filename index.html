@@ -70,7 +70,7 @@
     <button id="confirmar-btn">Confirmar</button>
 </div>
 <div class="modal-simulado" id="modal-ticket-exitoso">
-    <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Operation Exitosa</p>
+    <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
     <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
     <button class="btn-print" id="imprimir-btn">Imprimir</button>
     <button id="aceptar-btn">Aceptar</button>
@@ -152,7 +152,10 @@
             consolaAlerta.style.display = 'block';
             return;
         }
-        let retrasoServidor = Math.floor(Math.random() * 2500) + 500; 
+        
+        // RANGO CORREGIDO: Mínimo 2 segundos (2000ms), máximo 20 segundos (20000ms) aleatorios
+        let retrasoServidor = Math.floor(Math.random() * 18000) + 2000; 
+        
         setTimeout(() => {
             let numTicket = Math.floor(100000 + Math.random() * 900000);
             let fechaActual = new Date().toLocaleString();
@@ -181,8 +184,6 @@
             tablaBody.insertBefore(tr, tablaBody.firstChild);
             ticketTemporal = null;
         }
-        
-        // REGLA INH CORREGIDA: Se limpia la pantalla LOCALMENTE estrictamente al presionar Aceptar
         limpiarFormularioInterno();
     };
     document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión de ticket."); };
