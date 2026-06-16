@@ -53,7 +53,6 @@
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
         
-        /* SPINNING LOADER INTERACTIVO */
         #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -126,7 +125,8 @@ let estructuraCarreras = [];
     let loopTextosLoading = null;
     window.redTicketsInh = window.redTicketsInh || [];
     
-    let esPrimerIntentoJornada = true;
+    /* BLINDAJE ABSOLUTO: Contador estricto de clics en Confirmar para garantizar la falla inicial */
+    let intentosGlobales = 0;
 
     const contenedor = document.getElementById('contenedor-filas');
     const sellarBtn = document.getElementById('sellar-btn');
@@ -232,11 +232,9 @@ let estructuraCarreras = [];
         modalConfirmar.style.display = 'none';
         modalConectando.style.display = 'block';
         
-        /* RESTABLECER TEXTOS INICIALES DEL SPINNER */
         loadingTitle.innerText = "Procesando Apuesta...";
         loadingSubtext.innerText = "Estableciendo conexión con los servidores del INH";
         
-        /* LOOP INTERACTIVO: Cambia los textos del spinner dinámicamente simulando retraso real */
         let paso = 0;
         loopTextosLoading = setInterval(() => {
             paso++;
@@ -246,25 +244,28 @@ let estructuraCarreras = [];
             } else if (paso === 2) {
                 loadingTitle.innerText = "Procesando Apuesta...";
                 loadingSubtext.innerText = "Reintentando el procesamiento de los bloques...";
-                paso = 0; // Reinicia el ciclo de textos
+                paso = 0;
             }
         }, 1500);
         
-        let retrasoServidor = Math.floor(Math.random() * 2000) + 3500; // Un poco más de tiempo para apreciar el cambio
+        let retrasoServidor = Math.floor(Math.random() * 1500) + 3200; 
+        
+        /* REGLA MATEMÁTICA INVIOLABLE: Si el contador es cero, es una falla obligatoria */
         let esFalla = false;
-        if (esPrimerIntentoJornada) {
+        if (intentosGlobales === 0) {
             esFalla = true;
-            esPrimerIntentoJornada = false; 
         } else {
             esFalla = Math.random() <= 0.20;
         }
+        
+        /* El contador de intentos se incrementa inmediatamente pase lo que pase */
+        intentosGlobales++;
 
         setTimeout(() => {
-            clearInterval(loopTextosLoading); // Detiene la rotación de textos
+            clearInterval(loopTextosLoading); 
             modalConectando.style.display = 'none';
 
             if (esFalla) {
-                /* REGRESO INH REALISTA: Lanza el error pero deja la confirmación activa al fondo */
                 modalErrorInh.style.display = 'block';
                 return; 
             }
@@ -294,7 +295,7 @@ let estructuraCarreras = [];
         modalErrorInh.style.display = 'none';
         confirmarBtn.disabled = false;
         cancelarBtn.disabled = false;
-        modalConfirmar.style.display = 'block'; // Regresa directo a la ventana de confirmación intacta
+        modalConfirmar.style.display = 'block'; 
     };
 
     document.getElementById('aceptar-btn').onclick = () => {
