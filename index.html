@@ -16,40 +16,34 @@
         .carrera-titulo { width: 100px; font-weight: bold; font-size: 11px; color: #aaa; line-height: 1.2; }
         .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
         
-        /* BOTONES CON IDENTIDAD DE COLOR FIJA (MANTILLAS INH) */
         .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 12px; transition: transform 0.1s ease; }
-        
-        /* ESTADOS DE SELECCIÓN EXCLUSIVOS POR COLOR */
         .grupo-botones button.selected { border: 2px solid #10b981 !important; transform: scale(1.08); box-shadow: 0 0 5px #10b981; }
         
-        /* CLASES DE COLORES FIJOS ESTÁNDAR (PASTELES Y CORPORATIVOS REALEZA) */
-        .m-1 { background-color: #f3f4f6 !important; color: #111827 !important; } /* Blanco */
-        .m-2 { background-color: #fef08a !important; color: #111827 !important; } /* Amarillo */
-        .m-3 { background-color: #fca5a5 !important; color: #111827 !important; } /* Rojo */
-        .m-4 { background-color: #93c5fd !important; color: #111827 !important; } /* Azul */
-        .m-5 { background-color: #86efac !important; color: #111827 !important; } /* Verde */
-        .m-6 { background-color: #374151 !important; color: #f9fafb !important; } /* Negro */
-        .m-7 { background-color: #fed7aa !important; color: #111827 !important; } /* Naranja */
-        .m-8 { background-color: #fbcfe8 !important; color: #111827 !important; } /* Rosado */
-        .m-9 { background-color: #a5f3fc !important; color: #111827 !important; } /* Turquesa */
-        .m-10 { background-color: #d7ccc8 !important; color: #111827 !important; } /* Marrón */
-        .m-11 { background-color: #e9d5ff !important; color: #111827 !important; } /* Morado */
-        .m-12 { background-color: #ccffcc !important; color: #111827 !important; } /* Verde Claro */
-        .m-13 { background-color: #4e342e !important; color: #f9fafb !important; } /* Marrón Oscuro */
-        .m-14 { background-color: #cfd8dc !important; color: #111827 !important; } /* Gris Platino */
-        .m-15 { background-color: #fff9c4 !important; color: #111827 !important; } /* Crema */
-        .m-16 { background-color: #0d47a1 !important; color: #f9fafb !important; } /* Azul Marino */
-        .m-17 { background-color: #ad1457 !important; color: #f9fafb !important; } /* Rubí */
-        .m-18 { background-color: #004d40 !important; color: #f9fafb !important; } /* Jade */
-        .m-19 { background-color: #e65100 !important; color: #f9fafb !important; } /* Ámbar */
-        .m-20 { background-color: #263238 !important; color: #f9fafb !important; } /* Grafito */
+        .m-1 { background-color: #f3f4f6 !important; color: #111827 !important; }
+        .m-2 { background-color: #fef08a !important; color: #111827 !important; }
+        .m-3 { background-color: #fca5a5 !important; color: #111827 !important; }
+        .m-4 { background-color: #93c5fd !important; color: #111827 !important; }
+        .m-5 { background-color: #86efac !important; color: #111827 !important; }
+        .m-6 { background-color: #374151 !important; color: #f9fafb !important; }
+        .m-7 { background-color: #fed7aa !important; color: #111827 !important; }
+        .m-8 { background-color: #fbcfe8 !important; color: #111827 !important; }
+        .m-9 { background-color: #a5f3fc !important; color: #111827 !important; }
+        .m-10 { background-color: #d7ccc8 !important; color: #111827 !important; }
+        .m-11 { background-color: #e9d5ff !important; color: #111827 !important; }
+        .m-12 { background-color: #ccffcc !important; color: #111827 !important; }
+        .m-13 { background-color: #4e342e !important; color: #f9fafb !important; }
+        .m-14 { background-color: #cfd8dc !important; color: #111827 !important; }
+        .m-15 { background-color: #fff9c4 !important; color: #111827 !important; }
+        .m-16 { background-color: #0d47a1 !important; color: #f9fafb !important; }
+        .m-17 { background-color: #ad1457 !important; color: #f9fafb !important; }
+        .m-18 { background-color: #004d40 !important; color: #f9fafb !important; }
+        .m-19 { background-color: #e65100 !important; color: #f9fafb !important; }
+        .m-20 { background-color: #263238 !important; color: #f9fafb !important; }
 
-        /* ESTILO RETIRADO AJUSTADO */
         .grupo-botones button.retirado { background-color: #222 !important; color: #555 !important; border-color: #333 !important; text-decoration: line-through; opacity: 0.3; cursor: not-allowed !important; box-shadow: none !important; transform: none !important; }
         
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
-        
         .btn-sellar { background: #ffc200; color: #000; transition: all 0.2s ease; }
         .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.4 !important; cursor: not-allowed !important; }
         
@@ -58,6 +52,12 @@
         .modal-simulado button { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 85px; }
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
+        
+        /* PANTALLA DE CARGA REALISTA */
+        #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .seccion-reporte-inh { max-width: 600px; margin: 20px auto 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; overflow-x: auto; }
         .seccion-reporte-inh h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffc200; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; color: #e4e4e7; }
@@ -92,12 +92,21 @@
     </table>
 </div>
 <div class="overlay" id="modal-overlay"></div>
+
 <div class="modal-simulado" id="modal-confirmar">
     <p style="font-weight: bold; color: #ffc200; margin-top:0;">Confirmación de Jugada</p>
     <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px; color:#34d399;"></div>
     <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
     <button id="confirmar-btn">Confirmar</button>
 </div>
+
+<!-- NUEVO MODAL DE ESPERA DE CONEXIÓN -->
+<div class="modal-simulado" id="modal-conectando">
+    <p style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
+    <div class="spinner"></div>
+    <p style="font-size: 11px; color: #aaa;">Estableciendo conexión con los servidores del INH</p>
+</div>
+
 <div class="modal-simulado" id="modal-ticket-exitoso">
     <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
     <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
@@ -105,59 +114,37 @@
     <button id="aceptar-btn">Aceptar</button>
 </div>
 <script>
-    const contenedor = document.getElementById('contenedor-filas');
-    const tablaBody = document.getElementById('tabla-body');
-    const consolaAlerta = document.getElementById('consola-alerta');
+    let estructuraCarreras = [];
     let ticketTemporal = null;
+    window.redTicketsInh = window.redTicketsInh || [];
 
+    const contenedor = document.getElementById('contenedor-filas');
+    const sellarBtn = document.getElementById('sellar-btn');
+    const consolaAlerta = document.getElementById('consola-alerta');
     const overlay = document.getElementById('modal-overlay');
     const modalConfirmar = document.getElementById('modal-confirmar');
+    const modalConectando = document.getElementById('modal-conectando');
     const modalTicketExitoso = document.getElementById('modal-ticket-exitoso');
     const resumenComb = document.getElementById('resumen-combinaciones');
-    const ticketInfoText = document.getElementById('ticket-info-text');
-    const sellarBtn = document.getElementById('sellar-btn');
     const confirmarBtn = document.getElementById('confirmar-btn');
     const cancelarBtn = document.getElementById('cancelar-btn');
-
-    function generarGauss(media, desviacion) {
-        let u1 = 0, u2 = 0;
-        while(u1 === 0) u1 = Math.random(); 
-        while(u2 === 0) u2 = Math.random();
-        let z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-        return z * desviacion + media;
-    }
+    const ticketInfoText = document.getElementById('ticket-info-text');
+    const tablaBody = document.getElementById('tabla-body');
 
     function inicializarJornadaHipica() {
-        contenedor.innerHTML = "";
-        
-        // Estructurar cantidad de inscritos por carrera usando Gauss (Media 10, Desv 2.5)
-        let estructuraCarreras = [];
-        for (let i = 1; i <= 6; i++) {
-            let inscritos = Math.round(generarGauss(10, 2.5));
-            inscritos = Math.max(4, Math.min(20, inscritos));
-            estructuraCarreras.push({ carrera: i, inscritos: inscritos, retirados: [] });
-        }
+        estructuraCarreras = [
+            { carrera: 1, inscritos: 12, retirados: [3, 7] },
+            { carrera: 2, inscritos: 10, retirados: [5] },
+            { carrera: 3, inscritos: 14, retirados: [] },
+            { carrera: 4, inscritos: 11, retirados: [2, 9] },
+            { carrera: 5, inscritos: 15, retirados: [11] },
+            { carrera: 6, inscritos: 13, retirados: [4] }
+        ];
+        renderizarTablero();
+    }
 
-        // REGLA GLOBAL DE RETIRADOS: Calculados por jornada completa, no por carrera individual
-        let totalRetiradosJornada = Math.round(generarGauss(2.5, 1.4)); 
-        totalRetiradosJornada = Math.max(0, Math.min(8, totalRetiradosJornada));
-
-        let retiradosAsignados = 0;
-        let intentos = 0;
-        while (retiradosAsignados < totalRetiradosJornada && intentos < 100) {
-            intentos++;
-            let carreraAzar = estructuraCarreras[Math.floor(Math.random() * 6)];
-            // Evitar acumular demasiados retirados en una misma carrera corta
-            if (carreraAzar.retirados.length < 2 && carreraAzar.inscritos > 4) {
-                let numeroCaballoAzar = Math.floor(Math.random() * carreraAzar.inscritos) + 1;
-                if (!carreraAzar.retirados.includes(numeroCaballoAzar)) {
-                    carreraAzar.retirados.push(numeroCaballoAzar);
-                    retiradosAsignados++;
-                }
-            }
-        }
-
-        // Renderizar el tablero aplicando colores estables por número
+    function renderizarTablero() {
+        contenedor.innerHTML = '';
         estructuraCarreras.forEach(c => {
             let fila = document.createElement('div');
             fila.className = 'fila-carrera';
@@ -173,8 +160,6 @@
                 let btn = document.createElement('button');
                 btn.type = 'button';
                 btn.innerText = j;
-                
-                // ASIGNACIÓN FIJA DE COLOR: El número de caballo dictamina su color invariablemente
                 btn.classList.add(`m-${j}`);
                 
                 if (c.retirados.includes(j)) {
@@ -206,7 +191,7 @@
 
     function limpiarFormularioInterno() {
         document.querySelectorAll('.grupo-botones button:not(.retirado)').forEach(b => b.classList.remove('selected'));
-        consolaAlerta.style.display = 'none';
+        consolaAlerta.style.setProperties ? consolaAlerta.style.setProperty('display', 'none') : consolaAlerta.style.display = 'none';
         verificarLineasCompletas(); 
     }
 
@@ -234,21 +219,22 @@
     };
 
     confirmarBtn.onclick = () => {
-        confirmarBtn.innerText = "Procesando...";
-        confirmarBtn.disabled = true;
-        cancelarBtn.disabled = true;
+        // Cierra confirmación y abre pantalla de carga conectando al INH
+        modalConfirmar.style.display = 'none';
+        modalConectando.style.display = 'block';
         consolaAlerta.style.display = 'none';
         
-        let retrasoServidor = Math.floor(Math.random() * 18000) + 2000; 
-        let esFalla = Math.random() <= 0.05;
+        let retrasoServidor = Math.floor(Math.random() * 6000) + 2000; 
+        let esFalla = Math.random() <= 0.20; // Probabilidad de falla aumentada para pruebas
 
         setTimeout(() => {
+            modalConectando.style.display = 'none';
+
             if (esFalla) {
+                // Al fallar se muestra la alerta y la jugada se mantiene en pantalla intacta
                 consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
                 consolaAlerta.style.display = 'block';
-                confirmarBtn.innerText = "Confirmar";
-                confirmarBtn.disabled = false;
-                cancelarBtn.disabled = false;
+                overlay.style.display = 'none';
                 return; 
             }
 
@@ -267,8 +253,6 @@
             if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
             ticketInfoText.innerText = `Ticket: # ${numTicket}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
             
-            modalConfirmar.style.display = 'none';
-            overlay.style.display = 'block'; 
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
     };
@@ -284,6 +268,7 @@
         }
         limpiarFormularioInterno();
     };
+    
     document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión de ticket."); };
 
     window.onload = inicializarJornadaHipica;
