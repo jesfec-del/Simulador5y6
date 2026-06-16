@@ -132,11 +132,11 @@
     function inicializarJornadaHipica() {
         estructuraCarreras = [
             { carrera: 1, inscritos: 12, retirados: [3, 7] },
-            { carrera: 2, inscritos: 10, retirados: [5] },
+            { carrera: 2, inscritos: 10, retirados: [2] },
             { carrera: 3, inscritos: 14, retirados: [] },
-            { carrera: 4, inscritos: 11, retirados: [1, 9] },
-            { carrera: 5, inscritos: 15, retirados: [11] },
-            { carrera: 6, inscritos: 13, retirados: [2] }
+            { carrera: 4, inscritos: 11, retirados: [5, 9] },
+            { carrera: 5, inscritos: 15, retirados: [1] },
+            { carrera: 6, inscritos: 13, retirados: [12] }
         ];
         renderizarTablero();
     }
@@ -189,13 +189,11 @@
 
     function limpiarFormularioInterno() {
         document.querySelectorAll('.grupo-botones button:not(.retirado)').forEach(b => b.classList.remove('selected'));
-        consolaAlerta.innerText = ""; // SOLUCIÓN: Limpia el texto residual
         consolaAlerta.style.display = 'none';
         verificarLineasCompletas(); 
     }
 
     sellarBtn.onclick = () => {
-        consolaAlerta.innerText = ""; // SOLUCIÓN: Limpia el texto residual
         consolaAlerta.style.display = 'none';
         let selecciones = [];
         let filas = document.querySelectorAll('.fila-carrera');
@@ -221,25 +219,27 @@
     confirmarBtn.onclick = () => {
         modalConfirmar.style.display = 'none';
         modalConectando.style.display = 'block';
-        consolaAlerta.innerText = ""; // SOLUCIÓN: Limpia el texto residual
         consolaAlerta.style.display = 'none';
         
-        let retrasoServidor = Math.floor(Math.random() * 4000) + 1500; 
+        let retrasoServidor = Math.floor(Math.random() * 2500) + 1000; 
         let esFalla = Math.random() <= 0.20; 
 
         setTimeout(() => {
             modalConectando.style.display = 'none';
 
             if (esFalla) {
+                /* COMPORTAMIENTO INH FIEL: No se genera ticket, no se borran caballos, se reactiva el tablero */
                 consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
                 consolaAlerta.style.display = 'block';
                 overlay.style.display = 'none';
+                sellarBtn.disabled = false; 
                 return; 
             }
 
             let numTicket = Math.floor(100000 + Math.random() * 900000);
             let fechaActual = new Date().toLocaleString();
             let monto = (document.getElementById('unidades-input').value || 1) * 100;
+            
             ticketTemporal = {
                 fecha: fechaActual,
                 ticket: numTicket.toString(),
@@ -249,6 +249,7 @@
                 monto: `${monto} Bsf`,
                 estado: "PROCESADO"
             };
+            
             if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
             ticketInfoText.innerText = `Ticket: # ${numTicket}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
             
