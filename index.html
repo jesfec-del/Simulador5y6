@@ -53,6 +53,7 @@
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
         
+        /* SPINNING LOADER INTERACTIVO */
         #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -102,9 +103,9 @@
 </div>
 
 <div class="modal-simulado" id="modal-conectando">
-    <p style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
+    <p id="loading-title" style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
     <div class="spinner"></div>
-    <p style="font-size: 11px; color: #aaa;">Estableciendo conexión con los servidores del INH</p>
+    <p id="loading-subtext" style="font-size: 11px; color: #aaa;">Estableciendo conexión con los servidores del INH</p>
 </div>
 
 <div class="modal-simulado" id="modal-error-inh">
@@ -120,9 +121,12 @@
     <button id="aceptar-btn">Aceptar</button>
 </div>
 <script>
-    let estructuraCarreras = [];
+let estructuraCarreras = [];
     let ticketTemporal = null;
+    let loopTextosLoading = null;
     window.redTicketsInh = window.redTicketsInh || [];
+    
+    let esPrimerIntentoJornada = true;
 
     const contenedor = document.getElementById('contenedor-filas');
     const sellarBtn = document.getElementById('sellar-btn');
@@ -136,16 +140,17 @@
     const cancelarBtn = document.getElementById('cancelar-btn');
     const ticketInfoText = document.getElementById('ticket-info-text');
     const tablaBody = document.getElementById('tabla-body');
+    const loadingTitle = document.getElementById('loading-title');
+    const loadingSubtext = document.getElementById('loading-subtext');
 
     function inicializarJornadaHipica() {
-        /* ARREGLADO: Listas de retirados inicializadas correctamente como arreglos válidos [] */
         estructuraCarreras = [
-            { carrera: 1, inscritos: 12, retirados: [3, 7] },
-            { carrera: 2, inscritos: 10, retirados: [5] },
+            { carrera: 1, inscritos: 12, retirados: },
+            { carrera: 2, inscritos: 10, retirados: },
             { carrera: 3, inscritos: 14, retirados: [] },
-            { carrera: 4, inscritos: 11, retirados: [2, 9] },
-            { carrera: 5, inscritos: 15, retirados: [11] },
-            { carrera: 6, inscritos: 13, retirados: [4] }
+            { carrera: 4, inscritos: 11, retirados: },
+            { carrera: 5, inscritos: 15, retirados: },
+            { carrera: 6, inscritos: 13, retirados: }
         ];
         renderizarTablero();
     }
@@ -227,13 +232,39 @@
         modalConfirmar.style.display = 'none';
         modalConectando.style.display = 'block';
         
-        let retrasoServidor = Math.floor(Math.random() * 2000) + 1000; 
-        let esFalla = Math.random() <= 0.20; 
+        /* RESTABLECER TEXTOS INICIALES DEL SPINNER */
+        loadingTitle.innerText = "Procesando Apuesta...";
+        loadingSubtext.innerText = "Estableciendo conexión con los servidores del INH";
+        
+        /* LOOP INTERACTIVO: Cambia los textos del spinner dinámicamente simulando retraso real */
+        let paso = 0;
+        loopTextosLoading = setInterval(() => {
+            paso++;
+            if (paso === 1) {
+                loadingTitle.innerText = "Nuevo Intento...";
+                loadingSubtext.innerText = "Estableciendo nueva conexión con la central...";
+            } else if (paso === 2) {
+                loadingTitle.innerText = "Procesando Apuesta...";
+                loadingSubtext.innerText = "Reintentando el procesamiento de los bloques...";
+                paso = 0; // Reinicia el ciclo de textos
+            }
+        }, 1500);
+        
+        let retrasoServidor = Math.floor(Math.random() * 2000) + 3500; // Un poco más de tiempo para apreciar el cambio
+        let esFalla = false;
+        if (esPrimerIntentoJornada) {
+            esFalla = true;
+            esPrimerIntentoJornada = false; 
+        } else {
+            esFalla = Math.random() <= 0.20;
+        }
 
         setTimeout(() => {
+            clearInterval(loopTextosLoading); // Detiene la rotación de textos
             modalConectando.style.display = 'none';
 
             if (esFalla) {
+                /* REGRESO INH REALISTA: Lanza el error pero deja la confirmación activa al fondo */
                 modalErrorInh.style.display = 'block';
                 return; 
             }
@@ -263,7 +294,7 @@
         modalErrorInh.style.display = 'none';
         confirmarBtn.disabled = false;
         cancelarBtn.disabled = false;
-        modalConfirmar.style.display = 'block'; 
+        modalConfirmar.style.display = 'block'; // Regresa directo a la ventana de confirmación intacta
     };
 
     document.getElementById('aceptar-btn').onclick = () => {
