@@ -13,14 +13,17 @@
         .input-group input { width: 80px; padding: 6px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff; text-align: center; }
         .panel-juego { background: #1a1a1a; padding: 12px; border-radius: 6px; border: 1px solid #333; margin-top: 15px; }
         .fila-carrera { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; background: #222; padding: 6px; border-radius: 4px; }
-        .carrera-titulo { width: 80px; font-weight: bold; font-size: 13px; color: #aaa; }
+        .carrera-titulo { width: 100px; font-weight: bold; font-size: 11px; color: #aaa; line-height: 1.2; }
         .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
         .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #555; background: #333; color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .grupo-botones button.selected { background: #10b981; border-color: #10b981; }
+        
+        /* ESTILO PARA RETIRADOS: Botón opaco, tachado y bloqueado */
+        .grupo-botones button.retirado { background: #3f1a1a !important; color: #ef4444 !important; border-color: #7f1d1d !important; text-decoration: line-through; opacity: 0.5; cursor: not-allowed !important; }
+        
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
         
-        /* BOTÓN REALISTA: En gris tenue obligatorio al estar deshabilitado */
         .btn-sellar { background: #ffc200; color: #000; transition: all 0.2s ease; }
         .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.4 !important; cursor: not-allowed !important; }
         
@@ -74,8 +77,7 @@
     <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
     <button class="btn-print" id="imprimir-btn">Imprimir</button>
     <button id="aceptar-btn">Aceptar</button>
-</div>
-<script>
+</div><script>
     const contenedor = document.getElementById('contenedor-filas');
     const tablaBody = document.getElementById('tabla-body');
     const consolaAlerta = document.getElementById('consola-alerta');
@@ -87,27 +89,69 @@
     const resumenComb = document.getElementById('resumen-combinaciones');
     const ticketInfoText = document.getElementById('ticket-info-text');
     const sellarBtn = document.getElementById('sellar-btn');
+    const confirmarBtn = document.getElementById('confirmar-btn');
+    const cancelarBtn = document.getElementById('cancelar-btn');
 
-    for (let i = 1; i <= 6; i++) {
-        let fila = document.createElement('div');
-        fila.className = 'fila-carrera';
-        let titulo = document.createElement('div');
-        titulo.className = 'carrera-titulo';
-        titulo.innerText = `Carrera ${i}:`;
-        let group = document.createElement('div');
-        group.className = 'grupo-botones';
-        for (let j = 1; j <= 10; j++) {
-            let btn = document.createElement('button');
-            btn.type = 'button';
-            btn.innerText = j;
-            btn.onclick = () => {
-                btn.classList.toggle('selected');
-                verificarLineasCompletas();
-            };
-            group.appendChild(btn);
+    // Generador matemático de distribución Normal (Campana de Gauss) usando Box-Muller
+    function generarGauss(media, desviacion) {
+        let u1 = 0, u2 = 0;
+        while(u1 === 0) u1 = Math.random(); 
+        while(u2 === 0) u2 = Math.random();
+        let z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        return z * desviacion + media;
+    }
+
+    // Inicializar el tablero simulando una jornada hípica dinámica
+    function inicializarJornadaHipica() {
+        contenedor.innerHTML = "";
+        
+        for (let i = 1; i <= 6; i++) {
+            // Gauss para inscritos: Media 10, Desviación 2.5. Límites estrictos [4, 20]
+            let inscritos = Math.round(generarGauss(10, 2.5));
+            inscritos = Math.max(4, Math.min(20, inscritos));
+
+            // Gauss para retirados: Media 1.5, Desviación 1.2. Límites máximos lógicos según inscritos
+            let retiradosCant = Math.round(generarGauss(1.5, 1.2));
+            retiradosCant = Math.max(0, Math.min(8, retiradosCant));
+            if (inscritos - retiradosCant < 3) retiradosCant = inscritos - 3; // Evitar carreras inviables
+
+            // Determinar qué números específicos serán retirados de forma aleatoria
+            let indicesRetirados = new Set();
+            while(indicesRetirados.size < retiradosCant) {
+                let numeroAleatorio = Math.floor(Math.random() * inscritos) + 1;
+                indicesRetirados.add(numeroAleatorio);
+            }
+
+            let fila = document.createElement('div');
+            fila.className = 'fila-carrera';
+            
+            let titulo = document.createElement('div');
+            titulo.className = 'carrera-titulo';
+            titulo.innerHTML = `Carrera ${i}:<br><span style="font-size:9px;color:#888;">(${inscritos} Ins / ${retiradosCant} Ret)</span>`;
+            
+            let group = document.createElement('div');
+            group.className = 'grupo-botones';
+            
+            for (let j = 1; j <= inscritos; j++) {
+                let btn = document.createElement('button');
+                btn.type = 'button';
+                btn.innerText = j;
+                
+                if (indicesRetirados.has(j)) {
+                    btn.classList.add('retirado');
+                    btn.disabled = true; // El operador INH no puede seleccionar caballos retirados
+                } else {
+                    btn.onclick = () => {
+                        btn.classList.toggle('selected');
+                        verificarLineasCompletas();
+                    };
+                }
+                group.appendChild(btn);
+            }
+            fila.append(titulo, group);
+            contenedor.appendChild(fila);
         }
-        fila.append(titulo, group);
-        contenedor.appendChild(fila);
+        verificarLineasCompletas();
     }
 
     function verificarLineasCompletas() {
@@ -121,7 +165,7 @@
     }
 
     function limpiarFormularioInterno() {
-        document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
+        document.querySelectorAll('.grupo-botones button:not(.retirado)').forEach(b => b.classList.remove('selected'));
         consolaAlerta.style.display = 'none';
         verificarLineasCompletas(); 
     }
@@ -135,28 +179,39 @@
             selecciones.push(`C${idx+1}(${s.join(',')})`);
         });
         resumenComb.innerText = selecciones.join(' \n');
+        
+        confirmarBtn.innerText = "Confirmar";
+        confirmarBtn.disabled = false;
+        cancelarBtn.disabled = false;
+        
         overlay.style.display = 'block';
         modalConfirmar.style.display = 'block';
     };
 
-    document.getElementById('cancelar-btn').onclick = () => {
+    cancelarBtn.onclick = () => {
         overlay.style.display = 'none';
         modalConfirmar.style.display = 'none';
     };
 
-    document.getElementById('confirmar-btn').onclick = () => {
-        modalConfirmar.style.display = 'none';
-        let numeroAleatorio = Math.random();
-        if (numeroAleatorio <= 0.05) {
-            consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
-            consolaAlerta.style.display = 'block';
-            return;
-        }
+    confirmarBtn.onclick = () => {
+        confirmarBtn.innerText = "Procesando...";
+        confirmarBtn.disabled = true;
+        cancelarBtn.disabled = true;
+        consolaAlerta.style.display = 'none';
         
-        // RANGO CORREGIDO: Mínimo 2 segundos (2000ms), máximo 20 segundos (20000ms) aleatorios
         let retrasoServidor = Math.floor(Math.random() * 18000) + 2000; 
-        
+        let esFalla = Math.random() <= 0.05;
+
         setTimeout(() => {
+            if (esFalla) {
+                consolaAlerta.innerText = "❌ ERROR: El servidor del INH no responde (Error 504 Timeout). El bot debería pausarse.";
+                consolaAlerta.style.display = 'block';
+                confirmarBtn.innerText = "Confirmar";
+                confirmarBtn.disabled = false;
+                cancelarBtn.disabled = false;
+                return; 
+            }
+
             let numTicket = Math.floor(100000 + Math.random() * 900000);
             let fechaActual = new Date().toLocaleString();
             let monto = (document.getElementById('unidades-input').value || 1) * 100;
@@ -171,6 +226,9 @@
             };
             if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
             ticketInfoText.innerText = `Ticket: # ${numTicket}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
+            
+            modalConfirmar.style.display = 'none';
+            overlay.style.display = 'block'; 
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
     };
@@ -187,6 +245,10 @@
         limpiarFormularioInterno();
     };
     document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión de ticket."); };
+
+    // Ejecución inicial al cargar la página para simular los caballos de la jornada
+    window.onload = inicializarJornadaHipica;
 </script>
 </body>
 </html>
+
