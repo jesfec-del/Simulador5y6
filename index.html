@@ -58,15 +58,100 @@
     </div>
 </div>
 <div class="seccion-reporte-inh">
-    <h3>Historial de Apuestas (Últimos 50 tickets)</h3>
+    <h3>Historial de Apuestas (Ãšltimos 50 tickets)</h3>
     <table>
         <thead>
             <tr>
                 <th>FECHA</th>
                 <th>TICKET</th>
-                <th>HIPÓDROMO</th>
+                <th>HIPÃ“DROMO</th>
                 <th>TIPO</th>
-content://media/external/file/1000271231');
+                <th>SELECCIONES</th>
+                <th>MONTO</th>
+                <th>ESTADO</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body">
+            <!-- Las filas se insertarÃ¡n de forma dinÃ¡mica aquÃ­ abajo -->
+        </tbody>
+    </table>
+</div>
+
+<div class="overlay" id="modal-overlay"></div>
+
+<div class="modal-simulado" id="modal-confirmar">
+    <p style="font-weight: bold; color: #ffc200; margin-top:0;">ConfirmaciÃ³n de Jugada</p>
+    <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px; color:#34d399;"></div>
+    <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
+    <button id="confirmar-btn">Confirmar</button>
+</div>
+
+<div class="modal-simulado" id="modal-ticket-exitoso">
+    <p style="color: #10b981; font-weight: bold; margin-top:0;">âœ” OperaciÃ³n Exitosa</p>
+    <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
+    <button class="btn-print" id="imprimir-btn">Imprimir</button>
+    <button id="aceptar-btn">Aceptar</button>
+</div>
+
+<script>
+    const contenedor = document.getElementById('contenedor-filas');
+    const tablaBody = document.getElementById('tabla-body');
+    let ticketTemporal = null;
+
+    for (let i = 1; i <= 6; i++) {
+        let fila = document.createElement('div');
+        fila.className = 'fila-carrera';
+        let titulo = document.createElement('div');
+        titulo.className = 'carrera-titulo';
+        titulo.innerText = `Carrera ${i}:`;
+        let group = document.createElement('div');
+        group.className = 'grupo-botones';
+        
+        for (let j = 1; j <= 10; j++) {
+            let btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerText = j;
+            btn.onclick = () => btn.classList.toggle('selected');
+            group.appendChild(btn);
+        }
+        fila.append(titulo, group);
+        contenedor.appendChild(fila);
+    }
+
+    const limpiarBtn = document.getElementById('limpiar-btn');
+    const sellarBtn = document.getElementById('sellar-btn');
+    const overlay = document.getElementById('modal-overlay');
+    const modalConfirmar = document.getElementById('modal-confirmar');
+    const modalTicket = document.getElementById('modal-ticket-exitoso');
+    const confirmarBtn = document.getElementById('confirmar-btn');
+    const cancelarBtn = document.getElementById('cancelar-btn');
+    const aceptarBtn = document.getElementById('aceptar-btn');
+    const imprimirBtn = document.getElementById('imprimir-btn');
+    const ticketInfoText = document.getElementById('ticket-info-text');
+    const resumenCombinaciones = document.getElementById('resumen-combinaciones');
+
+    limpiarBtn.onclick = () => {
+        document.querySelectorAll('.grupo-botones button').forEach(b => b.classList.remove('selected'));
+    };
+
+    sellarBtn.onclick = () => {
+        let carrerasValidas = 0;
+        let jugadaActual = [];
+        
+        for (let i = 0; i < 6; i++) {
+            let seleccionados = Array.from(contenedor.children[i].querySelectorAll('.grupo-botones button.selected')).map(b => b.innerText);
+            if (seleccionados.length > 0) { 
+                carrerasValidas++; 
+                jugadaActual.push(`C${i+8}(${seleccionados.join(',')})`);
+            }
+        }
+
+        if (carrerasValidas < 6) {
+            console.log("Simulador: Formulario incompleto o vacÃ­o.");
+            return; 
+        }
+
+        resumenCombinaciones.innerText = jugadaActual.join('\n');
         overlay.style.display = 'block';
         modalConfirmar.style.display = 'block';
     };
