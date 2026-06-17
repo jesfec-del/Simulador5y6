@@ -15,8 +15,13 @@
         .fila-carrera { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; background: #222; padding: 6px; border-radius: 4px; }
         .carrera-titulo { width: 100px; font-weight: bold; font-size: 11px; color: #aaa; line-height: 1.2; }
         .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-        .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 12px; transition: transform 0.1s ease; }
+        
+        /* Botones del tablero y botones visuales del modal */
+        .grupo-botones button, .m-btn-visual { width: 32px; height: 32px; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 12px; transition: transform 0.1s ease; }
+        .m-btn-visual { display: inline-flex; align-items: center; justify-content: center; cursor: default; }
         .grupo-botones button.selected { border: 2px solid #10b981 !important; transform: scale(1.08); box-shadow: 0 0 5px #10b981; }
+        
+        /* Colores Oficiales de Mantas INH */
         .m-1 { background-color: #f3f4f6 !important; color: #111827 !important; }
         .m-2 { background-color: #fef08a !important; color: #111827 !important; }
         .m-3 { background-color: #fca5a5 !important; color: #111827 !important; }
@@ -37,12 +42,15 @@
         .m-18 { background-color: #004d40 !important; color: #f9fafb !important; }
         .m-19 { background-color: #e65100 !important; color: #f9fafb !important; }
         .m-20 { background-color: #263238 !important; color: #f9fafb !important; }
+        
         .grupo-botones button.retirado { background-color: #222 !important; color: #555 !important; border-color: #333 !important; text-decoration: line-through; opacity: 0.3; cursor: not-allowed !important; box-shadow: none !important; transform: none !important; }
         .acciones { display: flex; gap: 10px; margin-top: 15px; }
         .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
         .btn-sellar { background: #ffc200; color: #000; transition: all 0.2s ease; }
         .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.4 !important; cursor: not-allowed !important; }
-        .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 280px; box-sizing: border-box; }
+        
+        /* Modales */
+        .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 290px; max-width: 95%; box-sizing: border-box; }
         .modal-simulado p { margin-bottom: 15px; font-size: 14px; }
         .modal-simulado button { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 85px; }
         .btn-cancelar, .btn-print { background: #4b5563 !important; }
@@ -50,6 +58,8 @@
         #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
         .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Modales de Error e Historial */
         #modal-error-inh { display: none; background: #2d2d2d; border: 2px solid #ef4444; z-index: 100000; }
         #modal-error-inh p { color: #ef4444; font-family: monospace; font-size: 13px; }
         .btn-error-ok { background: #ef4444 !important; color: white !important; }
@@ -59,6 +69,10 @@
         th { background: #111; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; }
         td { padding: 8px; border-bottom: 1px solid #333; white-space: pre-line; }
         tr:nth-child(even) { background: #1e1e22; }
+        
+        /* Contenedor Fila por Fila Fiel al INH */
+        .bloque-vertical-visual { display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 10px; }
+        .fila-resumen-botones { display: flex; gap: 6px; justify-content: center; width: 100%; }
     </style>
 </head>
 <body>
@@ -86,11 +100,14 @@
 </div>
 <div class="overlay" id="modal-overlay"></div>
 
+<!-- Ventana Local de Combinaciones Modificada Fila por Fila -->
 <div class="modal-simulado" id="modal-confirmar">
-    <p style="font-weight: bold; color: #ffc200; margin-top:0;">Confirmación de Jugada</p>
-    <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px;"></div>
-    <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
-    <button id="confirmar-btn">Confirmar</button>
+    <p style="font-weight: bold; color: #ffc200; margin-top:0; margin-bottom:5px;">Confirmación de Jugada</p>
+    <div id="resumen-combinaciones" class="bloque-vertical-visual"></div>
+    <div style="margin-top: 15px;">
+        <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
+        <button id="confirmar-btn">Confirmar</button>
+    </div>
 </div>
 
 <div class="modal-simulado" id="modal-conectando">
@@ -107,7 +124,7 @@
 
 <div class="modal-simulado" id="modal-ticket-exitoso">
     <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
-    <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
+    <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px; text-align:left; white-space:pre-wrap;"></p>
     <button class="btn-print" id="imprimir-btn">Descargar</button>
     <button id="aceptar-btn">Aceptar</button>
 </div>
@@ -118,6 +135,7 @@
     let loopTextosLoading = null;
     window.redTicketsInh = window.redTicketsInh || [];
     let intentosGlobales = 0;
+    let datosSeleccionadosRaw = [];
 
     const contenedor = document.getElementById('contenedor-filas');
     const sellarBtn = document.getElementById('sellar-btn');
@@ -145,7 +163,7 @@
         ];
         renderizarTablero();
     }
-function renderizarTablero() {
+    function renderizarTablero() {
         contenedor.innerHTML = '';
         estructuraCarreras.forEach(c => {
             let fila = document.createElement('div');
@@ -193,12 +211,26 @@ function renderizarTablero() {
     }
 
     sellarBtn.onclick = () => {
-        let selecciones = [];
-        document.querySelectorAll('.fila-carrera').forEach((f, idx) => {
-            let s = Array.from(f.querySelectorAll('button.selected')).map(b => b.innerText);
-            selecciones.push(`C${idx+1}(${s.join(',')})`);
+        datosSeleccionadosRaw = [];
+        resumenComb.innerHTML = ''; 
+
+        document.querySelectorAll('.fila-carrera').forEach((f) => {
+            let s = Array.from(f.querySelectorAll('button.selected')).map(b => parseInt(b.innerText));
+            datosSeleccionadosRaw.push(s);
+
+            let divFila = document.createElement('div');
+            divFila.className = 'fila-resumen-botones';
+
+            s.forEach(num => {
+                let pBtn = document.createElement('div');
+                pBtn.className = `m-btn-visual m-${num}`;
+                pBtn.innerText = num;
+                divFila.appendChild(pBtn);
+            });
+
+            resumenComb.appendChild(divFila);
         });
-        resumenComb.innerText = selecciones.join(' ');
+
         confirmarBtn.innerText = "Confirmar";
         confirmarBtn.disabled = false;
         overlay.style.display = 'block';
@@ -236,14 +268,20 @@ function renderizarTablero() {
         setTimeout(() => {
             clearInterval(loopTextosLoading); 
             modalConectando.style.display = 'none';
+
             if (esFalla) {
-                modalErrorInh.style.display = 'block';
+                let verNotificacion = Math.random() < 0.50; 
+                if (verNotificacion) {
+                    modalErrorInh.style.display = 'block';
+                } else {
+                    modalConfirmar.style.display = 'block';
+                }
                 return; 
             }
 
             let numTicket = Math.floor(100000 + Math.random() * 900000);
             let monto = (document.getElementById('unidades-input').value || 1) * 100;
-            let textoCombinaciones = (resumenComb.innerText || resumenComb.textContent || "").trim();
+            let stringTextoComb = datosSeleccionadosRaw.map((s, i) => `C${i+1}(${s.join(',')})`).join(' ');
             
             let ahora = new Date();
             let fechaStr = ahora.toLocaleDateString();
@@ -255,20 +293,22 @@ function renderizarTablero() {
                 ticket: numTicket.toString(),
                 hipodromo: "La Rinconada",
                 tipo: "5 y 6",
-                selecciones: textoCombinaciones,
+                selecciones: stringTextoComb,
                 monto: parseFloat(monto).toFixed(2),
                 estado: "PROCESADO"
             };
             
             if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
-            ticketInfoText.innerText = `Ticket: # ${numTicket}\nCombinación: ${textoCombinaciones}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
+            ticketInfoText.innerText = `Ticket: # ${numTicket}\nCombinación: ${stringTextoComb}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
     };
 
     document.getElementById('error-aceptar-btn').onclick = () => {
         modalErrorInh.style.display = 'none';
-        modalConfirmar.style.display = 'block'; 
+        setTimeout(() => {
+            modalConfirmar.style.display = 'block'; 
+        }, 200);
     };
 
     document.getElementById('aceptar-btn').onclick = () => {
@@ -276,28 +316,14 @@ function renderizarTablero() {
         overlay.style.display = 'none';
         if (ticketTemporal) {
             let tr = document.createElement('tr');
-            tr.className = "border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors";
-            
             tr.innerHTML = `
-                <td class="px-6 py-4 text-foreground whitespace-nowrap">
-                    <div class="text-sm font-medium">${ticketTemporal.fecha}</div>
-                    <div class="text-[10px] text-muted-foreground">${ticketTemporal.hora}</div>
-                </td>
-                <td class="px-6 py-4">
-                    <span class="text-sm font-bold text-foreground tabular-nums">#${ticketTemporal.ticket}</span>
-                </td>
-                <td class="px-6 py-4 text-foreground text-sm">${ticketTemporal.hipodromo}</td>
-                <td class="px-6 py-4">
-                    <span class="inline-flex items-center rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">${ticketTemporal.tipo}</span>
-                </td>
-                <td class="px-6 py-4 text-muted-foreground text-xs font-mono max-w-[200px] truncate" title="${ticketTemporal.selecciones}">
-                    ${ticketTemporal.selecciones}
-                </td>
-                <td class="px-6 py-4 text-foreground font-bold tabular-nums text-sm whitespace-nowrap">${ticketTemporal.monto}</td>
-                <td class="px-6 py-4 text-right">
-                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-destructive bg-destructive/10">${ticketTemporal.estado}</span>
-                </td>`;
-                
+                <td><div>${ticketTemporal.fecha}</div><div style="font-size:8px;color:#666;">${ticketTemporal.hora}</div></td>
+                <td><span style="font-weight:bold;color:#ffc200;">#${ticketTemporal.ticket}</span></td>
+                <td>${ticketTemporal.hipodromo}</td>
+                <td><span style="background:#444;padding:2px 4px;border-radius:3px;">${ticketTemporal.tipo}</span></td>
+                <td title="${ticketTemporal.selecciones}" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ticketTemporal.selecciones}</td>
+                <td>${ticketTemporal.monto} Bsf</td>
+                <td><span style="color:#10b981;">${ticketTemporal.estado}</span></td>`;
             tablaBody.insertBefore(tr, tablaBody.firstChild);
             ticketTemporal = null;
         }
