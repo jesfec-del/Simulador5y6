@@ -123,6 +123,7 @@ function verificarLineasCompletas() {
             clearInterval(loopTextosLoading); 
             modalConectando.style.display = 'none';
             if (esFalla) {
+                // CORRECCIÓN PARA EL BOT: Oculta la ventana de confirmación al fallar igual que el INH real
                 modalConfirmar.style.display = 'none';
                 modalErrorInh.style.display = 'block';
                 return; 
