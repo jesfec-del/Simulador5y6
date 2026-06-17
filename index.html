@@ -64,7 +64,7 @@
         });
         verificarLineasCompletas();
     }
-function verificarLineasCompletas() {
+    function verificarLineasCompletas() {
         let filas = document.querySelectorAll('.fila-carrera');
         let todasTienenSeleccion = true;
         filas.forEach(f => {
@@ -123,7 +123,7 @@ function verificarLineasCompletas() {
             clearInterval(loopTextosLoading); 
             modalConectando.style.display = 'none';
             if (esFalla) {
-                // CORRECCIÓN PARA EL BOT: Oculta la ventana de confirmación al fallar igual que el INH real
+                // CORRECCIÓN FIEL AL INH: Oculta la ventana de confirmación al fallar para no confundir la exclusión mutua
                 modalConfirmar.style.display = 'none';
                 modalErrorInh.style.display = 'block';
                 return; 
@@ -153,7 +153,7 @@ function verificarLineasCompletas() {
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
     };
-document.getElementById('error-aceptar-btn').onclick = () => {
+    document.getElementById('error-aceptar-btn').onclick = () => {
         modalErrorInh.style.display = 'none';
         modalConfirmar.style.display = 'block'; 
     };
