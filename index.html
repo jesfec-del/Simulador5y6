@@ -31,7 +31,8 @@
         ];
         renderizarTablero();
     }
-function renderizarTablero() {
+
+    function renderizarTablero() {
         contenedor.innerHTML = '';
         estructuraCarreras.forEach(c => {
             let fila = document.createElement('div');
@@ -63,8 +64,7 @@ function renderizarTablero() {
         });
         verificarLineasCompletas();
     }
-
-    function verificarLineasCompletas() {
+function verificarLineasCompletas() {
         let filas = document.querySelectorAll('.fila-carrera');
         let todasTienenSeleccion = true;
         filas.forEach(f => {
@@ -95,7 +95,8 @@ function renderizarTablero() {
         overlay.style.display = 'none';
         modalConfirmar.style.display = 'none';
     };
-confirmarBtn.onclick = () => {
+
+    confirmarBtn.onclick = () => {
         modalConfirmar.style.display = 'none';
         modalConectando.style.display = 'block';
         loadingTitle.innerText = "Procesando Apuesta...";
@@ -151,8 +152,7 @@ confirmarBtn.onclick = () => {
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
     };
-
-    document.getElementById('error-aceptar-btn').onclick = () => {
+document.getElementById('error-aceptar-btn').onclick = () => {
         modalErrorInh.style.display = 'none';
         modalConfirmar.style.display = 'block'; 
     };
