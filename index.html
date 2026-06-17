@@ -123,9 +123,14 @@
             clearInterval(loopTextosLoading); 
             modalConectando.style.display = 'none';
             if (esFalla) {
-                // CORRECCIÓN FIEL AL INH: Oculta la ventana de confirmación al fallar para no confundir la exclusión mutua
-                modalConfirmar.style.display = 'none';
-                modalErrorInh.style.display = 'block';
+                // FIEL AL INH REAL: 50% de probabilidad de perder la conexión en silencio
+                if (Math.random() <= 0.50) {
+                    modalConfirmar.style.display = 'block';
+                    modalErrorInh.style.display = 'block';
+                } else {
+                    modalConfirmar.style.display = 'block';
+                    modalErrorInh.style.display = 'none';
+                }
                 return; 
             }
 
@@ -155,7 +160,6 @@
     };
     document.getElementById('error-aceptar-btn').onclick = () => {
         modalErrorInh.style.display = 'none';
-        modalConfirmar.style.display = 'block'; 
     };
 
     document.getElementById('aceptar-btn').onclick = () => {
@@ -192,7 +196,8 @@
     };
     
     document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de descarga."); };
-    window.onload = inicializarJornadaHipica;
+    window.onload = initializeJornadaHipica;
+    function initializeJornadaHipica() { inicializarJornadaHipica(); }
 </script>
 </body>
 </html>
