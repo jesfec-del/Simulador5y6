@@ -1,117 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Oficial 5y6 - Fiel al INH</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; padding: 10px; margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; }
-        h2 { text-align: center; color: #ffc200; margin-top: 0; font-size: 20px; }
-        .input-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        .input-group label { font-weight: bold; font-size: 14px; }
-        .input-group input { width: 80px; padding: 6px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff; text-align: center; }
-        .panel-juego { background: #1a1a1a; padding: 12px; border-radius: 6px; border: 1px solid #333; margin-top: 15px; }
-        .fila-carrera { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; background: #222; padding: 6px; border-radius: 4px; }
-        .carrera-titulo { width: 100px; font-weight: bold; font-size: 11px; color: #aaa; line-height: 1.2; }
-        .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-        .grupo-botones button { width: 32px; height: 32px; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 12px; transition: transform 0.1s ease; }
-        .grupo-botones button.selected { border: 2px solid #10b981 !important; transform: scale(1.08); box-shadow: 0 0 5px #10b981; }
-        .m-1 { background-color: #f3f4f6 !important; color: #111827 !important; }
-        .m-2 { background-color: #fef08a !important; color: #111827 !important; }
-        .m-3 { background-color: #fca5a5 !important; color: #111827 !important; }
-        .m-4 { background-color: #93c5fd !important; color: #111827 !important; }
-        .m-5 { background-color: #86efac !important; color: #111827 !important; }
-        .m-6 { background-color: #374151 !important; color: #f9fafb !important; }
-        .m-7 { background-color: #fed7aa !important; color: #111827 !important; }
-        .m-8 { background-color: #fbcfe8 !important; color: #111827 !important; }
-        .m-9 { background-color: #a5f3fc !important; color: #111827 !important; }
-        .m-10 { background-color: #d7ccc8 !important; color: #111827 !important; }
-        .m-11 { background-color: #e9d5ff !important; color: #111827 !important; }
-        .m-12 { background-color: #ccffcc !important; color: #111827 !important; }
-        .m-13 { background-color: #4e342e !important; color: #f9fafb !important; }
-        .m-14 { background-color: #cfd8dc !important; color: #111827 !important; }
-        .m-15 { background-color: #fff9c4 !important; color: #111827 !important; }
-        .m-16 { background-color: #0d47a1 !important; color: #f9fafb !important; }
-        .m-17 { background-color: #ad1457 !important; color: #f9fafb !important; }
-        .m-18 { background-color: #004d40 !important; color: #f9fafb !important; }
-        .m-19 { background-color: #e65100 !important; color: #f9fafb !important; }
-        .m-20 { background-color: #263238 !important; color: #f9fafb !important; }
-        .grupo-botones button.retirado { background-color: #222 !important; color: #555 !important; border-color: #333 !important; text-decoration: line-through; opacity: 0.3; cursor: not-allowed !important; box-shadow: none !important; transform: none !important; }
-        .acciones { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
-        .btn-sellar { background: #ffc200; color: #000; transition: all 0.2s ease; }
-        .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.4 !important; cursor: not-allowed !important; }
-        .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 280px; box-sizing: border-box; }
-        .modal-simulado p { margin-bottom: 15px; font-size: 14px; }
-        .modal-simulado button { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 85px; }
-        .btn-cancelar, .btn-print { background: #4b5563 !important; }
-        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
-        #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
-        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #modal-error-inh { display: none; background: #2d2d2d; border: 2px solid #ef4444; z-index: 100000; }
-        #modal-error-inh p { color: #ef4444; font-family: monospace; font-size: 13px; }
-        .btn-error-ok { background: #ef4444 !important; color: white !important; }
-        .seccion-reporte-inh { max-width: 600px; margin: 20px auto 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; overflow-x: auto; }
-        .seccion-reporte-inh h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffc200; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; color: #e4e4e7; }
-        th { background: #111; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; }
-        td { padding: 8px; border-bottom: 1px solid #333; white-space: pre-line; }
-        tr:nth-child(even) { background: #1e1e22; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>Simulador de Sistema 5y6 <span style="color: #10b981; font-size:12px;">(MODO INH REALISTA)</span></h2>
-    <div class="input-group">
-        <label>Unidades / Monto:</label>
-        <input type="number" id="unidades-input" value="1" min="1">
-    </div>
-    <div class="panel-juego" id="zona-interactiva">
-        <div id="contenedor-filas"></div>
-        <div class="acciones">
-            <button class="btn-main btn-sellar" id="sellar-btn" disabled>Sellar Cuadro</button>
-        </div>
-    </div>
-</div>
-<div class="seccion-reporte-inh">
-    <h3>Historial de Apuestas (Últimos 50 tickets)</h3>
-    <table>
-        <thead>
-            <tr><th>FECHA</th><th>TICKET</th><th>HIPÓDROMO</th><th>TIPO</th><th>SELECCIONES</th><th>MONTO</th><th>ESTADO</th></tr>
-        </thead>
-        <tbody id="tabla-body"></tbody>
-    </table>
-</div>
-<div class="overlay" id="modal-overlay"></div>
-
-<div class="modal-simulado" id="modal-confirmar">
-    <p style="font-weight: bold; color: #ffc200; margin-top:0;">Confirmación de Jugada</p>
-    <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px;"></div>
-    <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
-    <button id="confirmar-btn">Confirmar</button>
-</div>
-
-<div class="modal-simulado" id="modal-conectando">
-    <p id="loading-title" style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
-    <div class="spinner"></div>
-    <p id="loading-subtext" style="font-size: 11px; color: #aaa;">Estableciendo conexión con los servidores del INH</p>
-</div>
-
-<div class="modal-simulado" id="modal-error-inh">
-    <p style="font-weight: bold; margin-top:0;">⚠️ ERROR DE SISTEMA</p>
-    <p>El servidor del INH no responde (Error 504 Timeout).</p>
-    <button class="btn-error-ok" id="error-aceptar-btn">Aceptar</button>
-</div>
-
-<div class="modal-simulado" id="modal-ticket-exitoso">
-    <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
-    <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
-    <button class="btn-print" id="imprimir-btn">Descargar</button>
-    <button id="aceptar-btn">Aceptar</button>
-</div>
-
 <script>
     let estructuraCarreras = [];
     let ticketTemporal = null;
@@ -209,8 +95,7 @@ function renderizarTablero() {
         overlay.style.display = 'none';
         modalConfirmar.style.display = 'none';
     };
-
-    confirmarBtn.onclick = () => {
+confirmarBtn.onclick = () => {
         modalConfirmar.style.display = 'none';
         modalConectando.style.display = 'block';
         loadingTitle.innerText = "Procesando Apuesta...";
@@ -237,6 +122,7 @@ function renderizarTablero() {
             clearInterval(loopTextosLoading); 
             modalConectando.style.display = 'none';
             if (esFalla) {
+                modalConfirmar.style.display = 'none';
                 modalErrorInh.style.display = 'block';
                 return; 
             }
