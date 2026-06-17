@@ -85,6 +85,7 @@
     </table>
 </div>
 <div class="overlay" id="modal-overlay"></div>
+
 <div class="modal-simulado" id="modal-confirmar">
     <p style="font-weight: bold; color: #ffc200; margin-top:0;">Confirmación de Jugada</p>
     <div id="resumen-combinaciones" style="font-size: 12px; font-family: monospace; background: #1a1a1a; padding: 8px; border-radius: 4px; text-align: left; max-height: 90px; overflow-y: auto; margin-bottom: 15px;"></div>
@@ -107,7 +108,7 @@
 <div class="modal-simulado" id="modal-ticket-exitoso">
     <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
     <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px;"></p>
-    <button class="btn-print" id="imprimir-btn">Imprimir</button>
+    <button class="btn-print" id="imprimir-btn">Descargar</button>
     <button id="aceptar-btn">Aceptar</button>
 </div>
 
@@ -144,8 +145,7 @@
         ];
         renderizarTablero();
     }
-
-    function renderizarTablero() {
+function renderizarTablero() {
         contenedor.innerHTML = '';
         estructuraCarreras.forEach(c => {
             let fila = document.createElement('div');
@@ -198,9 +198,9 @@
             let s = Array.from(f.querySelectorAll('button.selected')).map(b => b.innerText);
             selecciones.push(`C${idx+1}(${s.join(',')})`);
         });
-        resumenComb.innerText = selecciones.join(' \n');
+        resumenComb.innerText = selecciones.join(' ');
         confirmarBtn.innerText = "Confirmar";
-        confirmarBtn.disabled = confirmarBtn.disabled = false;
+        confirmarBtn.disabled = false;
         overlay.style.display = 'block';
         modalConfirmar.style.display = 'block';
     };
@@ -243,18 +243,25 @@
 
             let numTicket = Math.floor(100000 + Math.random() * 900000);
             let monto = (document.getElementById('unidades-input').value || 1) * 100;
+            let textoCombinaciones = (resumenComb.innerText || resumenComb.textContent || "").trim();
+            
+            let ahora = new Date();
+            let fechaStr = ahora.toLocaleDateString();
+            let horaStr = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).toLowerCase();
+
             ticketTemporal = {
-                fecha: new Date().toLocaleString(),
+                fecha: fechaStr,
+                hora: horaStr,
                 ticket: numTicket.toString(),
                 hipodromo: "La Rinconada",
-                tipo: "5 Y 6",
-                selecciones: resumenComb.innerText.replace(/\n/g, ' '),
-                monto: `${monto} Bsf`,
+                tipo: "5 y 6",
+                selecciones: textoCombinaciones,
+                monto: parseFloat(monto).toFixed(2),
                 estado: "PROCESADO"
             };
             
             if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
-            ticketInfoText.innerText = `Ticket: # ${numTicket}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
+            ticketInfoText.innerText = `Ticket: # ${numTicket}\nCombinación: ${textoCombinaciones}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
             modalTicketExitoso.style.display = 'block';
         }, retrasoServidor);
     };
@@ -269,14 +276,35 @@
         overlay.style.display = 'none';
         if (ticketTemporal) {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td>${ticketTemporal.fecha}</td><td>${ticketTemporal.ticket}</td><td>${ticketTemporal.hipodromo}</td><td>${ticketTemporal.tipo}</td><td>${ticketTemporal.selecciones}</td><td>${ticketTemporal.monto}</td><td><span style="color:#10b981; font-weight:bold;">${ticketTemporal.estado}</span></td>`;
+            tr.className = "border-b border-border/50 hover:bg-muted/20 cursor-pointer transition-colors";
+            
+            tr.innerHTML = `
+                <td class="px-6 py-4 text-foreground whitespace-nowrap">
+                    <div class="text-sm font-medium">${ticketTemporal.fecha}</div>
+                    <div class="text-[10px] text-muted-foreground">${ticketTemporal.hora}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm font-bold text-foreground tabular-nums">#${ticketTemporal.ticket}</span>
+                </td>
+                <td class="px-6 py-4 text-foreground text-sm">${ticketTemporal.hipodromo}</td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">${ticketTemporal.tipo}</span>
+                </td>
+                <td class="px-6 py-4 text-muted-foreground text-xs font-mono max-w-[200px] truncate" title="${ticketTemporal.selecciones}">
+                    ${ticketTemporal.selecciones}
+                </td>
+                <td class="px-6 py-4 text-foreground font-bold tabular-nums text-sm whitespace-nowrap">${ticketTemporal.monto}</td>
+                <td class="px-6 py-4 text-right">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-destructive bg-destructive/10">${ticketTemporal.estado}</span>
+                </td>`;
+                
             tablaBody.insertBefore(tr, tablaBody.firstChild);
             ticketTemporal = null;
         }
         limpiarFormularioInterno();
     };
     
-    document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de impresión."); };
+    document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de descarga."); };
     window.onload = inicializarJornadaHipica;
 </script>
 </body>
