@@ -147,8 +147,10 @@
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
         contenedor.innerHTML = "";
+        // Inicializa la matriz lógica con exactamente 6 posiciones fijas para el 5y6
         datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
-        let contadorValidasInsertadas = 0;
+        
+        let contadorValidasVisibles = 0;
 
         let colH = { 
             1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
@@ -157,23 +159,25 @@
         };
 
         estructuraCarreras.forEach((cCfg) => {
+            // Si la carrera no pertenece a la jornada de hoy, se la salta por completo
             if (cCfg.inscritos === 0) return;
 
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
             
+            // Si la carrera es de la mañana, queda oculta en el fondo pero viva en el código
             if (!cCfg.visible) {
                 fila.style.display = 'none'; 
                 fila.style.visibility = 'hidden';
             }
 
-            // CORRECCIÓN MATEMÁTICA: Si es carrera válida del 5y6 toma el índice correlativo, si no, se queda en -1
-            let idxFilaActual = cCfg.esValida ? contadorValidasInsertadas : -1;
-            if (cCfg.esValida) contadorValidasInsertadas++;
+            // AMARRE INDEPENDIENTE: Asigna la posición real de pantalla (0 a 5) solo si es válida visible
+            let posJuegoActual = cCfg.esValida ? contadorValidasVisibles : -1;
+            if (cCfg.esValida) contadorValidasVisibles++;
 
             let tit = document.createElement('div');
             tit.className = 'titulo-valida';
-            tit.innerText = `C${cCfg.carrera} Pos. ${cCfg.esValida ? idxFilaActual + 1 : 'X'}`;
+            tit.innerText = `C${cCfg.carrera} Pos. ${cCfg.esValida ? (posJuegoActual + 1) : 'X'}`;
             fila.appendChild(tit);
 
             let grid = document.createElement('div');
@@ -191,12 +195,17 @@
                 } else {
                     chk.addEventListener('change', function() {
                         if (chk.checked) {
-                            if (cCfg.esValida && idxFilaActual !== -1 && !datosSeleccionadosRaw[idxFilaActual].includes(c.toString())) { 
-                                datosSeleccionadosRaw[idxFilaActual].push(c.toString()); 
+                            // Guarda el caballo estrictamente en base a su posición en la pantalla (posJuegoActual)
+                            if (cCfg.esValida && posJuegoActual !== -1) {
+                                if (!datosSeleccionadosRaw[posJuegoActual].includes(c.toString())) {
+                                    datosSeleccionadosRaw[posJuegoActual].push(c.toString());
+                                }
                             }
                             btn.style.boxShadow = "0 0 0 4px #10b981 inset"; btn.classList.add('selected');
                         } else {
-                            if (cCfg.esValida && idxFilaActual !== -1) datosSeleccionadosRaw[idxFilaActual] = datosSeleccionadosRaw[idxFilaActual].filter(n => n !== c.toString());
+                            if (cCfg.esValida && posJuegoActual !== -1) {
+                                datosSeleccionadosRaw[posJuegoActual] = datosSeleccionadosRaw[posJuegoActual].filter(n => n !== c.toString());
+                            }
                             btn.style.boxShadow = "none"; btn.classList.remove('selected');
                         }
                         calcularMontoSimulado();
@@ -212,9 +221,11 @@
 
     function calcularMontoSimulado() {
         let comb = datosSeleccionadosRaw.reduce((a, b) => a * b.length, 1);
+        // Cuenta estrictamente que haya al menos una selección de la posición 1 a la 6
         let validasConSeleccion = datosSeleccionadosRaw.filter(arr => arr.length > 0).length;
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
         let montoTotal = validasConSeleccion === 6 ? (comb * factorUnidades * 25) : 0;
+        
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         sellarBtn.disabled = (validasConSeleccion !== 6);
     }
@@ -274,6 +285,7 @@
     document.getElementById('aceptar-btn').onclick = () => { overlay.style.display = 'none'; modalTicketExitoso.style.display = 'none'; };
     document.getElementById('imprimir-btn').onclick = () => { alert("Descargando PDF oficial del Ticket..."); };
 
+    // LA BURBUJA INTERCEPTORA: Inyecta el círculo de soporte técnico que solapa físicamente el botón
     let burbujaSoporte = document.createElement('div');
     burbujaSoporte.setAttribute('style', 'position:fixed;bottom:10px;right:12px;width:44px;height:44px;background:#10b981;border-radius:50%;box-shadow:0 4px 10px rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;z-index:2100000;cursor:pointer;');
     burbujaSoporte.innerHTML = `<span style="color:#fff;font-size:18px;">💬</span>`;
