@@ -63,7 +63,7 @@
     </table>
 </div>
 <div class="overlay" id="modal-overlay"></div>
-<!-- Ventana Local de Combinaciones Modificada Fila por Fila -->
+
 <div class="modal-simulado" id="modal-confirmar">
     <p style="font-weight: bold; color: #ffc200; margin-top:0; margin-bottom:5px;">Confirmación de Jugada</p>
     <div id="resumen-combinaciones" class="bloque-vertical-visual"></div>
@@ -91,7 +91,6 @@
     <button class="btn-print" id="imprimir-btn">Descargar</button>
     <button id="aceptar-btn">Aceptar</button>
 </div>
-
 <script>
     let estructuraCarreras = [];
     let ticketTemporal = null;
@@ -116,90 +115,49 @@
     const loadingSubtext = document.getElementById('loading-subtext');
     const unidadesInput = document.getElementById('unidades-input');
 
-    // 1. TU CONFIGURACIÓN DE INICIALIZACIÓN CON RETIRADOS Y INICIO TOTALMENTE ALEATORIOS
     function inicializarJornadaHipica() {
         estructuraCarreras = [];
         let carreraInicial = Math.floor(6 + Math.random() * 3); 
-
         for (let i = 0; i < 6; i++) {
             let numCarrera = carreraInicial + i;
-            let inscritosAleatorios = Math.floor(10 + Math.random() * 6); // Entre 10 y 15 caballos
-            
+            let inscritosAleatorios = Math.floor(10 + Math.random() * 6);
             let retiradosAleatorios = [];
             let limiteRetirados = Math.floor(1 + Math.random() * 2);
             while (retiradosAleatorios.length < limiteRetirados) {
                 let nAzar = Math.floor(1 + Math.random() * inscritosAleatorios);
-                if (!retiradosAleatorios.includes(nAzar)) {
-                    retiradosAleatorios.push(nAzar);
-                }
+                if (!retiradosAleatorios.includes(nAzar)) retiradosAleatorios.push(nAzar);
             }
-            estructuraCarreras.push({
-                carrera: numCarrera,
-                inscritos: inscritosAleatorios,
-                retirados: retiradosAleatorios.sort((a,b) => a - b)
-            });
+            estructuraCarreras.push({ carrera: numCarrera, inscritos: inscritosAleatorios, retirados: retiradosAleatorios.sort((a,b)=>a-b) });
         }
         renderizarTablero();
     }
-    // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
-    function renderizarTablero() {
-        contenedor.innerHTML = "";
-        datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
 
-        let colH = { 
-            1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
-            6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 
-            11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"}, 15: {b:"#8b5cf6", c:"#fff"}
-        };
+    function renderizarTablero() {
+        contenedor.innerHTML = ""; datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
+        let colH = { 1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"}, 15: {b:"#8b5cf6", c:"#fff"} };
 
         estructuraCarreras.forEach((cCfg, idxFila) => {
-            let fila = document.createElement('div');
-            fila.className = 'carrera-row';
-            
-            let tit = document.createElement('div');
-            tit.className = 'titulo-valida';
-            tit.innerText = `C${cCfg.carrera} Pos. ${idxFila + 1}`;
-            fila.appendChild(tit);
-
-            let grid = document.createElement('div');
-            grid.className = 'grid-caballos';
+            let fila = document.createElement('div'); fila.className = 'carrera-row';
+            let tit = document.createElement('div'); tit.className = 'titulo-valida'; tit.innerText = `C${cCfg.carrera} Pos. ${idxFila + 1}`; fila.appendChild(tit);
+            let grid = document.createElement('div'); grid.className = 'grid-caballos';
 
             for (let c = 1; c <= cCfg.inscritos; c++) {
-                let celda = document.createElement('div');
-                celda.className = 'celda-caballo';
-
-                let chk = document.createElement('input');
-                chk.type = 'checkbox';
-                chk.className = 'check-nativo';
-
-                let btn = document.createElement('button');
-                btn.className = 'btn-tactil';
-                btn.innerText = c;
-
-                let cfgColor = colH[c] || {b:"#333", c:"#fff"};
-                btn.style.background = cfgColor.b;
-                btn.style.color = cfgColor.c;
+                let celda = document.createElement('div'); celda.className = 'celda-caballo';
+                let chk = document.createElement('input'); chk.type = 'checkbox'; chk.className = 'check-nativo';
+                let btn = document.createElement('button'); btn.className = 'btn-tactil'; btn.innerText = c;
+                let cfgColor = colH[c] || {b:"#333", c:"#fff"}; btn.style.background = cfgColor.b; btn.style.color = cfgColor.c;
 
                 if (cCfg.retirados.includes(c)) {
-                    chk.disabled = true;
-                    btn.disabled = true;
-                    btn.classList.add('retirado');
-                    btn.style.background = '#222';
-                    btn.style.color = '#555';
-                    btn.style.textDecoration = 'line-through';
-                    btn.style.opacity = '0.2';
+                    chk.disabled = true; btn.disabled = true; btn.classList.add('retirado');
+                    btn.style.background = '#222'; btn.style.color = '#555'; btn.style.textDecoration = 'line-through'; btn.style.opacity = '0.2';
                 } else {
                     chk.addEventListener('change', function() {
                         if (chk.checked) {
-                            if (!datosSeleccionadosRaw[idxFila].includes(c.toString())) {
-                                datosSeleccionadosRaw[idxFila].push(c.toString());
-                            }
-                            btn.style.boxShadow = "0 0 0 4px #10b981 inset";
-                            btn.classList.add('selected');
+                            if (!datosSeleccionadosRaw[idxFila].includes(c.toString())) datosSeleccionadosRaw[idxFila].push(c.toString());
+                            btn.style.boxShadow = "0 0 0 4px #10b981 inset"; btn.classList.add('selected');
                         } else {
                             datosSeleccionadosRaw[idxFila] = datosSeleccionadosRaw[idxFila].filter(n => n !== c.toString());
-                            btn.style.boxShadow = "none";
-                            btn.classList.remove('selected');
+                            btn.style.boxShadow = "none"; btn.classList.remove('selected');
                         }
                         calcularMontoSimulado();
                     });
@@ -217,18 +175,14 @@
         let validasConSeleccion = datosSeleccionadosRaw.filter(arr => arr.length > 0).length;
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
         let montoTotal = validasConSeleccion === 6 ? (comb * factorUnidades * 25) : 0;
-        
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         sellarBtn.disabled = (validasConSeleccion !== 6);
     }
 
     unidadesInput.addEventListener('input', calcularMontoSimulado);
 
-    // OPERATIVA ORIGINAL DE TUS MODALES DE CONTROL INTERACTIVOS
     sellarBtn.onclick = () => {
-        overlay.style.display = 'block';
-        modalConfirmar.style.display = 'block';
-        resumenComb.innerHTML = "";
+        overlay.style.display = 'block'; modalConfirmar.style.display = 'block'; resumenComb.innerHTML = "";
         estructuraCarreras.forEach((cCfg, idx) => {
             let sorted = [...datosSeleccionadosRaw[idx]].sort((a,b)=>parseInt(a)-parseInt(b));
             resumenComb.innerHTML += `C${cCfg.carrera} -> (${sorted.join('-')})<br>`;
@@ -236,33 +190,23 @@
     };
 
     cancelarBtn.onclick = () => { overlay.style.display = 'none'; modalConfirmar.style.display = 'none'; };
-
-    confirmarBtn.onclick = () => {
-        modalConfirmar.style.display = 'none';
-        modalConectando.style.display = 'block';
-        intentosGlobales = 0;
-        ejecutarFlujoServidor();
-    };
+    confirmarBtn.onclick = () => { modalConfirmar.style.display = 'none'; modalConectando.style.display = 'block'; intentosGlobales = 0; ejecutarFlujoServidor(); };
 
     function ejecutarFlujoServidor() {
         intentosGlobales++;
         if (intentosGlobales === 1) {
-            loadingTitle.innerText = "Procesando Apuesta...";
-            loadingSubtext.innerText = "Estableciendo conexión con los servidores del INH";
+            loadingTitle.innerText = "Procesando Apuesta..."; loadingSubtext.innerText = "Estableciendo conexión con los servidores del INH";
             setTimeout(ejecutarFlujoServidor, 1200);
         } else if (intentosGlobales === 2) {
-            loadingTitle.innerText = "Sellanado Cuadro...";
-            loadingSubtext.innerText = "Transmitiendo bloque cifrado de combinaciones masivas";
+            loadingTitle.innerText = "Sellanado Cuadro..."; loadingSubtext.innerText = "Transmitiendo bloque cifrado de combinaciones masivas";
             setTimeout(ejecutarFlujoServidor, 1500);
         } else {
-            modalConectando.style.display = 'none';
-            modalTicketExitoso.style.display = 'block';
+            modalConectando.style.display = 'none'; modalTicketExitoso.style.display = 'block';
             let numTk = Math.floor(1000000 + Math.random() * 9000000);
             let f = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             let tTxt = `La Rinconada · 5 y 6\nTicket: #${numTk}\nFecha: ${f}\n`;
             estructuraCarreras.forEach((c, i) => { tTxt += `C${c.carrera}: ${datosSeleccionadosRaw[i].join('-')}\n`; });
             ticketInfoText.innerText = tTxt;
-            
             window.redTicketsInh.push({ ticket: numTk, fecha: f, hipodromo: "La Rinconada", tipo: "5y6", selecciones: datosSeleccionadosRaw.map(a=>a.join('-')).join(' | '), monto: document.querySelector('.txt-monto').innerText });
             actualizarTablaReporte();
         }
@@ -278,7 +222,6 @@
     document.getElementById('aceptar-btn').onclick = () => { overlay.style.display = 'none'; modalTicketExitoso.style.display = 'none'; };
     document.getElementById('imprimir-btn').onclick = () => { alert("Descargando PDF oficial del Ticket..."); };
 
-    // INICIO EN CALIENTE DEL ENTORNO DE SIMULACIÓN
     inicializarJornadaHipica();
 </script>
 </body>
