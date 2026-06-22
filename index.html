@@ -147,11 +147,12 @@
     }
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
-        // REQUISITO: Borra por completo el contenedor de la pantalla antes de rellenar desde cero
         contenedor.innerHTML = "";
+        // Inicializa la matriz lógica estrictamente con las 6 posiciones fijas que requiere el 5y6
+        datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
         
-        // Inicializa la matriz con los 21 casilleros físicos para la plantilla completa
-        datosSeleccionadosRaw = Array.from({ length: 21 }, () => []);
+        let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length;
+        let inicio5y6 = numCarrerasHoy - 5; // Lf - 5
 
         let colH = { 
             1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
@@ -160,30 +161,22 @@
         };
 
         estructuraCarreras.forEach((cCfg) => {
-            // Si la carrera no está en la plantilla o tiene 0 inscritos, no genera elemento
             if (cCfg.inscritos === 0) return;
 
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
             
-            // Si la carrera no pertenece a las últimas 6 de la jornada (visible), se oculta en el fondo
             if (!cCfg.visible) {
                 fila.style.display = 'none'; 
                 fila.style.visibility = 'hidden';
             }
 
-            // Mantiene el índice rígido basado en el número de carrera real en la plantilla (0 al 20)
-            let idxFilaActual = cCfg.carrera - 1;
+            // CALIBRACIÓN DE ÍNDICE PLANO: Si es válida, calcula su casillero real del 0 al 5
+            let idxJuego = cCfg.esValida ? (cCfg.carrera - inicio5y6) : -1;
 
             let tit = document.createElement('div');
             tit.className = 'titulo-valida';
-            
-            // Calcula visualmente la posición del 5y6 para el usuario (1 a 6) si es válida
-            let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length;
-            let inicio5y6 = numCarrerasHoy - 5;
-            let posUsuario = cCfg.esValida ? (cCfg.carrera - inicio5y6 + 1) : 'X';
-            
-            tit.innerText = `C${cCfg.carrera} Pos. ${posUsuario}`;
+            tit.innerText = `C${cCfg.carrera} Pos. ${cCfg.esValida ? (idxJuego + 1) : 'X'}`;
             fila.appendChild(tit);
 
             let grid = document.createElement('div');
@@ -201,12 +194,17 @@
                 } else {
                     chk.addEventListener('change', function() {
                         if (chk.checked) {
-                            if (!datosSeleccionadosRaw[idxFilaActual].includes(c.toString())) {
-                                datosSeleccionadosRaw[idxFilaActual].push(c.toString());
+                            // Guarda el caballo estrictamente en el casillero indexado del 0 al 5
+                            if (idxJuego !== -1) {
+                                if (!datosSeleccionadosRaw[idxJuego].includes(c.toString())) {
+                                    datosSeleccionadosRaw[idxJuego].push(c.toString());
+                                }
                             }
                             btn.style.boxShadow = "0 0 0 4px #10b981 inset"; btn.classList.add('selected');
                         } else {
-                            datosSeleccionadosRaw[idxFilaActual] = datosSeleccionadosRaw[idxFilaActual].filter(n => n !== c.toString());
+                            if (idxJuego !== -1) {
+                                datosSeleccionadosRaw[idxJuego] = datosSeleccionadosRaw[idxJuego].filter(n => n !== c.toString());
+                            }
                             btn.style.boxShadow = "none"; btn.classList.remove('selected');
                         }
                         calcularMontoSimulado();
@@ -221,30 +219,15 @@
     }
 
     function calcularMontoSimulado() {
-        // Encuentra la cantidad total de carreras programadas para hoy (Línea Final Lf)
-        let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length;
-        let inicio5y6 = numCarrerasHoy - 5; // Lf - 5
-
-        let posicionesRellenasEn5y6 = 0;
-        let comb = 1;
-
-        // Revisa de forma estricta el rango exacto desde Lf-5 hasta Lf en el arreglo
-        for (let i = 1; i <= 21; i++) {
-            if (i >= inicio5y6 && i <= numCarrerasHoy) {
-                let seleccionesDeEstaCarrera = datosSeleccionadosRaw[i - 1].length;
-                if (seleccionesDeEstaCarrera > 0) {
-                    posicionesRellenasEn5y6++;
-                    comb *= seleccionesDeEstaCarrera;
-                }
-            }
-        }
-
+        // Cuenta estrictamente que los 6 casilleros indexados tengan datos seleccionados
+        let posicionesRellenasEn5y6 = datosSeleccionadosRaw.filter(arr => arr.length > 0).length;
+        let comb = datosSeleccionadosRaw.reduce((a, b) => a * b.length, 1);
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
         let montoTotal = (posicionesRellenasEn5y6 === 6) ? (comb * factorUnidades * 25) : 0;
         
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         
-        // HABILITACIÓN DEFINITIVA: Si están llenas las 6 posiciones entre Lf-5 y Lf, enciende el botón
+        // HABILITACIÓN SÍNCRONA BLINDADA: Activa el botón al estar rellenados los 6 casilleros planos
         sellarBtn.disabled = (posicionesRellenasEn5y6 !== 6);
     }
 
@@ -260,9 +243,10 @@
 
     sellarBtn.onclick = () => {
         overlay.style.display = 'block'; modalConfirmar.style.display = 'block'; resumenComb.innerHTML = "";
+        let vIdx = 0;
         estructuraCarreras.forEach((cCfg) => {
             if (cCfg.esValida) {
-                let sorted = [...datosSeleccionadosRaw[cCfg.carrera - 1]].sort((a,b)=>parseInt(a)-parseInt(b));
+                let sorted = [...datosSeleccionadosRaw[vIdx++]].sort((a,b)=>parseInt(a)-parseInt(b));
                 resumenComb.innerHTML += `C${cCfg.carrera} -> (${sorted.join('-')})<br>`;
             }
         });
@@ -285,11 +269,12 @@
             let f = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             let tTxt = `La Rinconada · 5 y 6\nTicket: #${numTk}\nFecha: ${f}\n`;
             
+            let idxValida = 0;
             estructuraCarreras.forEach((c) => { 
-                if (c.esValida) { tTxt += `C${c.carrera}: ${datosSeleccionadosRaw[c.carrera - 1].join('-')}\n`; } 
+                if (c.esValida) { tTxt += `C${c.carrera}: ${datosSeleccionadosRaw[idxValida++].join('-')}\n`; } 
             });
             ticketInfoText.innerText = tTxt;
-            window.redTicketsInh.push({ ticket: numTk, fecha: f, hipodromo: "La Rinconada", tipo: "5y6", selecciones: datosSeleccionadosRaw.filter((a,idx)=>estructuraCarreras[idx] && estructuraCarreras[idx].esValida).map(a=>a.join('-')).join(' | '), monto: document.querySelector('.txt-monto').innerText });
+            window.redTicketsInh.push({ ticket: numTk, fecha: f, hipodromo: "La Rinconada", tipo: "5y6", selecciones: datosSeleccionadosRaw.map(a=>a.join('-')).join(' | '), monto: document.querySelector('.txt-monto').innerText });
             actualizarTablaReporte();
         }
     }
