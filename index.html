@@ -147,7 +147,6 @@
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
         contenedor.innerHTML = "";
-        // Inicializa la matriz lógica con exactamente 6 posiciones para las carreras visibles
         datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
         let contadorValidasInsertadas = 0;
 
@@ -158,7 +157,7 @@
         };
 
         estructuraCarreras.forEach((cCfg) => {
-            if (!cCfg.visible && cCfg.inscritos === 0) return;
+            if (cCfg.inscritos === 0) return;
 
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
@@ -168,7 +167,8 @@
                 fila.style.visibility = 'hidden';
             }
 
-            let idxFilaActual = contadorValidasInsertadas;
+            // CORRECCIÓN MATEMÁTICA: Si es carrera válida del 5y6 toma el índice correlativo, si no, se queda en -1
+            let idxFilaActual = cCfg.esValida ? contadorValidasInsertadas : -1;
             if (cCfg.esValida) contadorValidasInsertadas++;
 
             let tit = document.createElement('div');
@@ -191,10 +191,12 @@
                 } else {
                     chk.addEventListener('change', function() {
                         if (chk.checked) {
-                            if (cCfg.esValida && !datosSeleccionadosRaw[idxFilaActual].includes(c.toString())) { datosSeleccionadosRaw[idxFilaActual].push(c.toString()); }
+                            if (cCfg.esValida && idxFilaActual !== -1 && !datosSeleccionadosRaw[idxFilaActual].includes(c.toString())) { 
+                                datosSeleccionadosRaw[idxFilaActual].push(c.toString()); 
+                            }
                             btn.style.boxShadow = "0 0 0 4px #10b981 inset"; btn.classList.add('selected');
                         } else {
-                            if (cCfg.esValida) datosSeleccionadosRaw[idxFilaActual] = datosSeleccionadosRaw[idxFilaActual].filter(n => n !== c.toString());
+                            if (cCfg.esValida && idxFilaActual !== -1) datosSeleccionadosRaw[idxFilaActual] = datosSeleccionadosRaw[idxFilaActual].filter(n => n !== c.toString());
                             btn.style.boxShadow = "none"; btn.classList.remove('selected');
                         }
                         calcularMontoSimulado();
