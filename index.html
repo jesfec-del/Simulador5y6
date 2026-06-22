@@ -2,18 +2,18 @@ javascript:(function(){
     let L = localStorage;
     let m = L.getItem('p_6');
     let x = L.getItem('max_6');
- 
+    
     window.botBitacora = [];
     window.redTicketsInh = window.redTicketsInh || [];
     window.botAcumulado = window.botAcumulado || [];
     let tkD = false;
- 
+
     function registrarPaso(log) {
         let t = new Date().toLocaleTimeString();
         window.botBitacora.push("[" + t + "] " + log);
         console.log("[BOT Auditor] " + log);
     }
- 
+
     if (!window.intAct) {
         window.intAct = true;
         let oX = window.XMLHttpRequest.prototype.open;
@@ -32,12 +32,12 @@ javascript:(function(){
             }); oX.apply(this, arguments);
         };
     }
- 
+
     // RADAR VISUAL: Captura en el DOM únicamente los 6 bloques con tamaño y display activo en pantalla
     function obtenerFilasCarreras() {
         let bts = Array.from(document.querySelectorAll('button, div[role="button"]')).filter(b => /^\d+$/.test(b.innerText.trim()));
         let pts = new Set();
- 
+        
         bts.forEach(b => { 
             let pr = b.parentElement;
             while (pr && pr !== document.body) {
@@ -54,7 +54,7 @@ javascript:(function(){
         });
         return Array.from(pts).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
     }
- 
+
     function fByT(regex) {
         let els = Array.from(document.querySelectorAll('button, div[role="button"], input[type="button"], a, div, span, section'));
         return els.find(el => {
@@ -72,7 +72,7 @@ javascript:(function(){
         let programmeCompleto = [[],[],[],[],[],[],[]];
         let carreraActual = 1; let pizarraReal = obtenerFilasCarreras();
         if (!pizarraReal || pizarraReal.length < 6) { alert("🚨 Error: No se localizaron las 6 carreras visibles."); return; }
- 
+
         let colH = { 
             1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
             6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 
@@ -84,21 +84,21 @@ javascript:(function(){
         let grid = document.createElement('div'); grid.style = "display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:20px;max-height:280px;overflow-y:auto;padding:5px;";
         let bntNext = document.createElement('button'); bntNext.innerText = "CONTINUAR CARRERA 2"; bntNext.style = "width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;letter-spacing:0.5px;box-shadow:0 4px 10px rgba(37,99,235,0.3);";
         box.append(tit, grid, bntNext); overlay.appendChild(box); document.body.appendChild(overlay);
- 
+
         function cargarCarreraUI(num) {
             carreraActual = num; tit.innerText = "🏁 SELECCIÓN MANUAL - CARRERA " + num; grid.innerHTML = ""; 
             bntNext.innerText = num === 6 ? "PROCESAR JUEGO AUTÓNOMO ▶" : "CONTINUAR CARRERA " + (num + 1);
- 
+            
             let sR = obtenerFilasCarreras(); let filaDOM = sR[num - 1];
             let botonesRealesINH = filaDOM ? Array.from(filaDOM.querySelectorAll('button, div[role="button"]')).filter(b => /^\d+$/.test(b.innerText.trim())) : [];
             let colH = { 1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"} };
- 
+            
             botonesRealesINH.forEach(btnWeb => {
                 let numeroCaballoReal = parseInt(btnWeb.innerText.trim(), 10); if (isNaN(numeroCaballoReal)) return;
                 let btnH = document.createElement('a'); btnH.innerText = numeroCaballoReal; let cfg = colH[numeroCaballoReal] || {b:"#333", c:"#fff"};
                 btnH.setAttribute('style', 'display:block;padding:14px 0;background:' + cfg.b + ';color:' + cfg.c + ';border:2px solid rgba(255,255,255,0.1);border-radius:8px;font-weight:extrabold;cursor:pointer;text-align:center;font-size:14px;text-decoration:none;user-select:none;box-shadow:1px 2px 5px rgba(0,0,0,0.4);opacity:0.4;transition:all 0.15s ease;');
                 if (programmeCompleto[num - 1].includes(numeroCaballoReal.toString())) { btnH.style.opacity = "1"; btnH.style.border = "2px solid #10b981"; btnH.style.boxShadow = "0 0 10px #10b981"; }
- 
+
                 btnH.onclick = (e) => { e.preventDefault();
                     if (programmeCompleto[num - 1].includes(numeroCaballoReal.toString())) {
                         programmeCompleto[num - 1] = programmeCompleto[num - 1].filter(n => n !== numeroCaballoReal.toString());
@@ -121,30 +121,30 @@ javascript:(function(){
         let totBoletosFisicos = Math.ceil(tO / unidadesPorBoleto);
         let tda = cI(pf, cF); let tot = tda.length;
         window.botCtx = { tda: tda, tot: tot, cF: cF, pf: pf, unidadesPorBoleto: unidadesPorBoleto, totBoletosFisicos: totBoletosFisicos, totalCombinaciones: tO };
- 
+        
         let p = document.getElementById('p-flot'); if (p) p.remove();
         p = document.createElement('div'); p.id = 'p-flot';
         p.setAttribute('style', 'position:fixed!important;bottom:20px!important;right:20px!important;z-index:2147483647!important;background:#111!important;color:#fff!important;padding:12px!important;border-radius:12px!important;font-family:sans-serif!important;width:185px!important;border:3px solid #ffc200!important;box-shadow:0 8px 24px rgba(0,0,0,0.6);');
- 
+        
         let t = document.createElement('div'); let cV = document.createElement('div'); let bS = document.createElement('button');
         let bM = document.createElement('button'); let bS2 = document.createElement('button'); let bR = document.createElement('div');
- 
+        
         t.style = "font-size:12px;color:#aaa;margin-bottom:2px;font-weight:bold;";
         cV.style = "font-size:20px;color:#10b981;font-weight:extrabold;margin:4px 0 10px 0;word-break:break-all;letter-spacing:1px;text-shadow:0 0 4px rgba(16,185,129,0.2);";
         bS.id = 'bot-accion-btn'; bS.style = "width:100%;padding:11px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;letter-spacing:0.5px;";
         bM.style = "width:100%;padding:8px;background:#10b981;color:#fff;border:none;border-radius:6px;margin-top:8px;font-size:11px;font-weight:bold;cursor:pointer;"; bM.innerText = 'MOVER INTERFAZ';
         bS2.style = "width:100%;padding:8px;background:#4b5563;color:#fff;border:none;border-radius:6px;margin-top:6px;font-size:11px;font-weight:bold;cursor:pointer;"; bS2.innerText = 'IR A COMBINACIÓN';
         bR.innerText = 'Cambiar'; bR.style = "text-decoration:underline;cursor:pointer;color:#aaa;text-align:center;font-size:12px;margin-top:10px;font-weight:bold;padding:2px 0;";
- 
+        
         p.append(t, cV, bS, bM, bS2, bR); document.documentElement.appendChild(p);
         window.botUI = { t: t, cV: cV, bS: bS }; let esq = 0;
- 
+        
         bM.onclick = () => { esq = (esq + 1) % 4; p.style.top = p.style.bottom = p.style.left = p.style.right = 'auto'; p.style[esq === 0 || esq === 3 ? 'bottom' : 'top'] = '20px'; p.style[esq === 0 || esq === 1 ? 'right' : 'left'] = '20px'; };
         bS2.onclick = () => { let g = prompt("Ir al (1-" + totBoletosFisicos + "):"); if (g && !isNaN(g) && g >= 1 && g <= totBoletosFisicos) { L.setItem('prog_6', (parseInt(g) - 1).toString()); bS.disabled = false; act(); } };
         function cI(lX, fX) { let res = [[]]; for (let c = 0; c < lX.length; c++) { if (fX.includes(c)) continue; let rv = []; let b = lX[c]; for (let j = 0; j < res.length; j++) { for (let x = 0; x < b.length; x++) { if (res[j]) rv.push(res[j].concat([b[x]])); } } res = rv; } return res; }
         function sT(e) { if (!e) return; e.focus(); ['click'].forEach(ev => { e.dispatchEvent(new MouseEvent(ev, { bubbles: true, cancelable: true, view: window })); }); }
         function copiarFallo(etapa, detalle) { let msg = "🚨 INFORME FALLO\nPASO: " + etapa + "\nTÉCNICO: " + detalle; navigator.clipboard.writeText(msg).then(() => { alert("⚠️ Copiado."); }); }
- 
+        
         function validarDiscordanciasGlobales() {
             let sR = obtenerFilasCarreras(); let pf = window.botCtx.pf;
             for (let g = 0; g < 6; g++) { let r = sR[g]; if (r) { let hbs = pf[g]; for (let h = 0; h < hbs.length; h++) { let cab = hbs[h]; let btn = Array.from(r.querySelectorAll('button')).find(b => parseInt(b.innerText.trim(), 10) === parseInt(cab, 10)); if (!btn || btn.disabled || btn.classList.contains('retirado')) throw new Error("Retirado " + cab); } } }
@@ -203,7 +203,7 @@ javascript:(function(){
             let checkCancelarInicial = fByT(/cancelar/i); let checkConfirmarInicial = fByT(/confirmar/i);
             if (!checkCancelarInicial && !checkConfirmarInicial) {
                 try { if (!window.botListaMostrada && !modalChalecos) { validarDiscordanciasGlobales(); return; } mC(i); } catch(err) { window.botUI.bS.disabled = false; act(); copiarFallo("FASE INICIAL", err.message); return; }
- 
+                
                 // TU PLAN SÍNCRONO: Congela la acción y despacha el click virtual directo a los 388ms humanos fijos
                 setTimeout(() => {
                     let revisarPizarra = setInterval(() => {
