@@ -1,152 +1,134 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Sistema 5y6 (MODO INH REALISTA)</title>
-    <style>
-        body { background-color: #0e0e0e; color: #ffffff; font-family: sans-serif; margin: 0; padding-bottom: 90px; }
-        .container { padding: 15px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
-        .input-group input { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 8px; border-radius: 4px; width: 80px; font-weight: bold; }
-        .carrera-row { margin: 15px 0; background: #141414; padding: 12px; border-radius: 8px; border: 1px solid #222; }
-        .titulo-valida { color: #ffc200; font-size: 13px; font-weight: bold; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
-        .grid-caballos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .celda-caballo { position: relative; background: #222; border-radius: 6px; padding: 10px 0; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        .check-nativo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer; }
-        .btn-tactil { width: 85%; padding: 10px 0; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.1s ease; }
-        .barra-sellar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 15px; display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #ffc200; box-sizing: border-box; z-index: 1000; }
-        .txt-monto { font-weight: bold; color: #10b981; font-size: 18px; letter-spacing: 0.5px; }
-        .btn-main { background: #ffc200; color: #000; border: none; border-radius: 8px; padding: 12px 24px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,194,0,0.2); letter-spacing: 0.5px; }
-        .btn-main:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed !important; box-shadow: none !important; }
-        .seccion-reporte-inh { padding: 15px; margin-top: 20px; background: #111; border-top: 1px solid #222; }
-        .seccion-reporte-inh h3 { font-size: 14px; color: #ffc200; margin-top: 0; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
-        th { color: #ffc200; padding: 8px; border-bottom: 1px solid #333; }
-        td { padding: 8px; border-bottom: 1px solid #222; color: #ccc; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; }
-        .modal-simulado { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #141414; border: 2px solid #ffc200; border-radius: 12px; padding: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.8); z-index: 2100; display: none; width: 340px; text-align: center; box-sizing: border-box; font-family: sans-serif; }
-        .modal-simulado p { color: #fff; font-size: 13px; margin: 10px 0; }
-        .modal-simulado button { padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
-        #confirmar-btn { background: #ffc200; color: #000; margin-left: 10px; }
-        .btn-cancelar { background: #333; color: #fff; }
-        #aceptar-btn { background: #10b981; color: #fff; width: 100%; margin-top: 10px; }
-        .btn-print { background: #2563eb; color: #fff; width: 100%; margin-top: 5px; }
-        .btn-error-ok { background: #ef4444; color: #fff; width: 100%; }
-        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 15px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .bloque-vertical-visual { max-height: 160px; overflow-y: auto; background: #0a0a0a; padding: 8px; border-radius: 6px; border: 1px solid #222; text-align: left; font-size: 11px; font-family: monospace; color: #aaa; line-height: 1.5; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>Simulador de Sistema 5y6 <span style="color: #10b981; font-size:12px;">(MODO INH REALISTA)</span></h2>
-    <div class="input-group">
-        <label>Unidades / Monto:</label>
-        <input type="number" id="unidades-input" value="1" min="1">
-    </div>
-    <div class="panel-juego" id="zona-interactiva">
-        <div id="contenedor-filas"></div>
-        <div class="acciones">
-            <button class="btn-main btn-sellar" id="sellar-btn" disabled>Sellar Cuadro</button>
-        </div>
-    </div>
-</div>
-<div class="seccion-reporte-inh">
-    <h3>Historial de Apuestas (Últimos 50 tickets)</h3>
-    <table>
-        <thead>
-            <tr><th>FECHA</th><th>TICKET</th><th>HIPÓDROMO</th><th>TIPO</th><th>SELECCIONES</th><th>MONTO</th><th>ESTADO</th></tr>
-        </thead>
-        <tbody id="tabla-body"></tbody>
-    </table>
-</div>
-<div class="overlay" id="modal-overlay"></div>
-<div class="modal-simulado" id="modal-confirmar">
-    <p style="font-weight: bold; color: #ffc200; margin-top:0; margin-bottom:5px;">Confirmación de Jugada</p>
-    <div id="resumen-combinaciones" class="bloque-vertical-visual"></div>
-    <div style="margin-top: 15px;">
-        <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
-        <button id="confirmar-btn">Confirmar</button>
-    </div>
-</div>
-
-<div class="modal-simulado" id="modal-conectando">
-    <p id="loading-title" style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
-    <div class="spinner"></div>
-    <p id="loading-subtext" style="font-size: 11px; color: #aaa;">Estableciendo conexión con los servidores del INH</p>
-</div>
-
-<div class="modal-simulado" id="modal-error-inh">
-    <p style="font-weight: bold; margin-top:0;">⚠️ ERROR DE SISTEMA</p>
-    <p>El servidor del INH no responde (Error 504 Timeout).</p>
-    <button class="btn-error-ok" id="error-aceptar-btn">Aceptar</button>
-</div>
-
-<div class="modal-simulado" id="modal-ticket-exitoso">
-    <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
-    <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px; text-align:left; white-space:pre-wrap;"></p>
-    <button class="btn-print" id="imprimir-btn">Descargar</button>
-    <button id="aceptar-btn">Aceptar</button>
-</div>
-
-<script>
-    let estructuraCarreras = [];
-    let ticketTemporal = null;
-    let loopTextosLoading = null;
+javascript:(function(){
+    let L = localStorage;
+    let m = L.getItem('p_6');
+    let x = L.getItem('max_6');
+    
+    window.botBitacora = [];
     window.redTicketsInh = window.redTicketsInh || [];
-    let intentosGlobales = 0;
-    let datosSeleccionadosRaw = [];
+    window.botAcumulado = window.botAcumulado || [];
+    let tkD = false;
 
-    const contenedor = document.getElementById('contenedor-filas');
-    const sellarBtn = document.getElementById('sellar-btn');
-    const overlay = document.getElementById('modal-overlay');
-    const modalConfirmar = document.getElementById('modal-confirmar');
-    const modalConectando = document.getElementById('modal-conectando');
-    const modalErrorInh = document.getElementById('modal-error-inh');
-    const modalTicketExitoso = document.getElementById('modal-ticket-exitoso');
-    const resumenComb = document.getElementById('resumen-combinaciones');
-    const confirmarBtn = document.getElementById('confirmar-btn');
-    const cancelarBtn = document.getElementById('cancelar-btn');
-    const ticketInfoText = document.getElementById('ticket-info-text');
-    const tablaBody = document.getElementById('tabla-body');
-    const loadingTitle = document.getElementById('loading-title');
-    const loadingSubtext = document.getElementById('loading-subtext');
-    const unidadesInput = document.getElementById('unidades-input');
-
-    function inicializarJornadaHipica() {
-        estructuraCarreras = [];
-        let totalCarrerasHoy = Math.floor(7 + Math.random() * 15); 
-        let inicio5y6 = totalCarrerasHoy - 5; 
-
-        for (let numCarrera = 1; numCarrera <= 21; numCarrera++) {
-            if (numCarrera <= totalCarrerasHoy) {
-                let inscritosAleatorios = Math.floor(10 + Math.random() * 6);
-                let retiradosAleatorios = [];
-                let limiteRetirados = Math.floor(1 + Math.random() * 2);
-                while (retiradosAleatorios.length < limiteRetirados) {
-                    let nAzar = Math.floor(1 + Math.random() * inscritosAleatorios);
-                    if (!retiradosAleatorios.includes(nAzar)) retiradosAleatorios.push(nAzar);
-                }
-                let esVisibleParaElHumano = (numCarrera >= inicio5y6);
-                estructuraCarreras.push({
-                    carrera: numCarrera,
-                    inscritos: inscritosAleatorios,
-                    retirados: retiradosAleatorios.sort((a,b) => a - b),
-                    visible: esVisibleParaElHumano,
-                    esValida: esVisibleParaElHumano
-                });
-            } else {
-                estructuraCarreras.push({ carrera: numCarrera, inscritos: 0, retirados: [], visible: false, esValida: false });
-            }
-        }
-        renderizarTablero();
+    function registrarPaso(log) {
+        let t = new Date().toLocaleTimeString();
+        window.botBitacora.push("[" + t + "] " + log);
+        console.log("[BOT Auditor] " + log);
     }
+
+    if (!window.intAct) {
+        window.intAct = true;
+        let oX = window.XMLHttpRequest.prototype.open;
+        window.XMLHttpRequest.prototype.open = function() {
+            this.addEventListener('load', function() {
+                try {
+                    if (this.responseURL.includes('apuestas') || this.responseURL.includes('tickets')) {
+                        let r = JSON.parse(this.responseText);
+                        let tk = r.tickets || r.data || r;
+                        if (tk) {
+                            if (Array.isArray(tk)) { tk.forEach(t => window.redTicketsInh.push(t)); } else { window.redTicketsInh.push(tk); }
+                            tkD = true; registrarPaso("Auditoría de Red: Interceptada respuesta HTTP válida.");
+                        }
+                    }
+                } catch (e) {}
+            }); oX.apply(this, arguments);
+        };
+    }
+
+    // EL RADAR VISUAL HUMANO: Descarta líneas fantasmas ocultas (display:none) y agarra las 6 visibles en pantalla
+    function obtenerFilasCarreras() {
+        let bts = Array.from(document.querySelectorAll('button, div[role="button"]')).filter(b => /^\d+$/.test(b.innerText.trim()));
+        let pts = new Set();
+        
+        bts.forEach(b => { 
+            let pr = b.parentElement;
+            while (pr && pr !== document.body) {
+                if (pr.querySelectorAll('button, div[role="button"]').length >= 4) {
+                    let style = window.getComputedStyle(pr);
+                    let rect = pr.getBoundingClientRect();
+                    // OJO HUMANO: Exige que el bloque tenga tamaño real y no esté oculto por la plantilla de fondo
+                    if (style.display !== 'none' && style.visibility !== 'hidden' && rect.height > 10) {
+                        pts.add(pr);
+                    }
+                    break;
+                }
+                pr = pr.parentElement;
+            }
+        });
+        return Array.from(pts).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    }
+
+    function fByT(regex) {
+        let els = Array.from(document.querySelectorAll('button, div[role="button"], input[type="button"], a, div, span, section'));
+        return els.find(el => {
+            let t = (el.innerText || el.value || el.textContent || '').trim();
+            if ((/sellar/i.test(t) || (el.className && el.className.includes('group/button'))) && regex.test("sellar")) {
+                let style = window.getComputedStyle(el); let rect = el.getBoundingClientRect();
+                if (style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 5) {
+                    return true;
+                }
+            }
+            let style = window.getComputedStyle(el); let rect = el.getBoundingClientRect();
+            let visible = style.display !== 'none' && style.visibility !== 'hidden' && (rect.width > 0 || el.id === 'sellar-btn');
+            if (!visible) return false; return regex.test(t);
+        });
+    }
+    function pD(){
+        let programmeCompleto = [[],[],[],[],[],[],[]];
+        let carreraActual = 1; let pizarraReal = obtenerFilasCarreras();
+        if (!pizarraReal || pizarraReal.length < 6) { alert("🚨 Error: No se localizaron las 6 carreras visibles en pantalla."); return; }
+
+        let colH = { 
+            1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
+            6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 
+            11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"} 
+        };
+        let overlay = document.createElement('div'); overlay.setAttribute('style', 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:sans-serif;');
+        let box = document.createElement('div'); box.setAttribute('style', 'background:#141414;color:#fff;padding:20px;border-radius:16px;width:380px;border:2px solid #ffc107;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.7);');
+        let tit = document.createElement('h3'); tit.style = "margin:0 0 15px 0;color:#ffc107;font-size:14px;font-weight:extrabold;letter-spacing:0.5px;text-transform:uppercase;";
+        let grid = document.createElement('div'); grid.style = "display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:20px;max-height:280px;overflow-y:auto;padding:5px;";
+        let bntNext = document.createElement('button'); bntNext.innerText = "CONTINUAR CARRERA 2"; bntNext.style = "width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;letter-spacing:0.5px;box-shadow:0 4px 10px rgba(37,99,235,0.3);";
+        box.append(tit, grid, bntNext); overlay.appendChild(box); document.body.appendChild(overlay);
+
+        function cargarCarreraUI(num) {
+            carreraActual = num; tit.innerText = "🏁 SELECCIÓN MANUAL - CARRERA " + num;
+            grid.innerHTML = ""; bntNext.innerText = num === 6 ? "PROCESAR JUEGO AUTÓNOMO ▶" : "CONTINUAR CARRERA " + (num + 1);
+            
+            let sR = obtenerFilasCarreras();
+            let filaDOM = sR[num - 1];
+            let botonesRealesINH = filaDOM ? Array.from(filaDOM.querySelectorAll('button, div[role="button"]')).filter(b => /^\d+$/.test(b.innerText.trim())) : [];
+            
+            let colH = { 
+                1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
+                6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 
+                11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"}
+            };
+            
+            botonesRealesINH.forEach(btnWeb => {
+                let numeroCaballoReal = parseInt(btnWeb.innerText.trim(), 10);
+                if (isNaN(numeroCaballoReal)) return;
+
+                let btnH = document.createElement('a'); btnH.innerText = numeroCaballoReal; 
+                let cfg = colH[numeroCaballoReal] || {b:"#333", c:"#fff"};
+                
+                btnH.setAttribute('style', 'display:block;padding:14px 0;background:' + cfg.b + ';color:' + cfg.c + ';border:2px solid rgba(255,255,255,0.1);border-radius:8px;font-weight:extrabold;cursor:pointer;text-align:center;font-size:14px;text-decoration:none;user-select:none;box-shadow:1px 2px 5px rgba(0,0,0,0.4);opacity:0.4;transition:all 0.15s ease;');
+                
+                if (programmeCompleto[num - 1].includes(numeroCaballoReal.toString())) {
+                    btnH.style.opacity = "1"; btnH.style.border = "2px solid #10b981"; btnH.style.boxShadow = "0 0 10px #10b981";
+                }
+
+                btnH.onclick = (e) => { e.preventDefault();
+                    if (programmeCompleto[num - 1].includes(numeroCaballoReal.toString())) {
+                        programmeCompleto[num - 1] = programmeCompleto[num - 1].filter(n => n !== numeroCaballoReal.toString());
+                        btnH.style.opacity = "0.4"; btnH.style.border = "2px solid rgba(255,255,255,0.1)"; btnH.style.boxShadow = "1px 2px 5px rgba(0,0,0,0.4)";
+                    } else {
+                        programmeCompleto[num - 1].push(numeroCaballoReal.toString()); btnH.style.opacity = "1"; btnH.style.border = "2px solid #10b981"; btnH.style.boxShadow = "0 0 10px #10b981";
+                    }
+                }; grid.appendChild(btnH);
+            });
+        }
+    // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
         contenedor.innerHTML = "";
         datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
-        let contadorValidasInsertadas = 0;
 
         let colH = { 
             1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
@@ -154,7 +136,7 @@
             11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"}, 15: {b:"#8b5cf6", c:"#fff"}
         };
 
-        estructuraCarreras.forEach((cCfg) => {
+        estructuraCarreras.forEach((cCfg, idxFila) => {
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
             if (!cCfg.visible) { fila.style.display = 'none'; fila.style.visibility = 'hidden'; }
@@ -207,37 +189,33 @@
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
         let montoTotal = validasConSeleccion === 6 ? (comb * factorUnidades * 25) : 0;
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
-        let sBtnReal = document.getElementById('sellar-btn');
-        if(sBtnReal) sBtnReal.disabled = (validasConSeleccion !== 6);
+        sellarBtn.disabled = (validasConSeleccion !== 6);
     }
 
     unidadesInput.addEventListener('input', calcularMontoSimulado);
 
-    function construirBarraSellarRealista() {
-        let oldBarra = document.querySelector('.barra-sellar'); if (oldBarra) oldBarra.remove();
-        let barra = document.createElement('div'); barra.className = 'barra-sellar';
-        let txtMonto = document.createElement('span'); txtMonto.className = 'txt-monto'; txtMonto.innerText = "Monto: 0,00 Bs";
-
+    // ADAPTACIÓN EN CALIENTE DE TU BOTÓN ORIGINAL SÍNCRONO CON CAMBIO DE EMOJI
+    function aplicarRasgosRealesTuBoton() {
         let listaEmojis = ['🏆', '🐎', '💰', '🎫', '✅', '🎰'];
         let emojiElegido = listaEmojis[Math.floor(Math.random() * listaEmojis.length)];
-
-        let btnSellar = document.createElement('button');
-        btnSellar.id = 'sellar-btn'; btnSellar.className = 'btn-main group/button'; btnSellar.disabled = true;
-        btnSellar.setAttribute('style', 'display: flex !important; align-items: center !important; gap: 6px !important;');
-        btnSellar.innerHTML = `<span>${emojiElegido}</span> <span>Sellar Cuadro</span>`;
-
-        btnSellar.onclick = () => {
-            overlay.style.display = 'block'; modalConfirmar.style.display = 'block'; resumenComb.innerHTML = "";
-            estructuraCarreras.forEach((cCfg) => {
-                if (cCfg.esValida) {
-                    let idxValida = estructuraCarreras.filter(c => c.esValida && c.carrera < cCfg.carrera).length;
-                    let sorted = [...datosSeleccionadosRaw[idxValida]].sort((a,b)=>parseInt(a)-parseInt(b));
-                    resumenComb.innerHTML += `C${cCfg.carrera} -> (${sorted.join('-')})<br>`;
-                }
-            });
-        };
-        barra.append(txtMonto, btnSellar); document.body.appendChild(barra);
+        
+        // Inyecta las propiedades de producción reales sobre tu mismo botón de fábrica
+        sellarBtn.className = 'btn-main btn-sellar group/button';
+        sellarBtn.setAttribute('style', 'display: flex !important; align-items: center !important; gap: 6px !important; justify-content: center;');
+        sellarBtn.innerHTML = `<span>${emojiElegido}</span> <span>Sellar Cuadro</span>`;
     }
+
+    // OPERATIVA ORIGINAL SÍNCRONA DE TUS MODALES DE CONTROL INTERACTIVOS
+    sellarBtn.onclick = () => {
+        overlay.style.display = 'block'; modalConfirmar.style.display = 'block'; resumenComb.innerHTML = "";
+        estructuraCarreras.forEach((cCfg) => {
+            if (cCfg.esValida) {
+                let idxValida = estructuraCarreras.filter(c => c.esValida && c.carrera < cCfg.carrera).length;
+                let sorted = [...datosSeleccionadosRaw[idxValida]].sort((a,b)=>parseInt(a)-parseInt(b));
+                resumenComb.innerHTML += `C${cCfg.carrera} -> (${sorted.join('-')})<br>`;
+            }
+        });
+    };
 
     cancelarBtn.onclick = () => { overlay.style.display = 'none'; modalConfirmar.style.display = 'none'; };
     confirmarBtn.onclick = () => { modalConfirmar.style.display = 'none'; modalConectando.style.display = 'block'; intentosGlobales = 0; ejecutarFlujoServidor(); };
@@ -273,7 +251,14 @@
     document.getElementById('aceptar-btn').onclick = () => { overlay.style.display = 'none'; modalTicketExitoso.style.display = 'none'; };
     document.getElementById('imprimir-btn').onclick = () => { alert("Descargando PDF oficial del Ticket..."); };
 
-    construirBarraSellarRealista();
+    // LA BURBUJA INTERCEPTORA: Inyecta la trampa flotante sobre tu interfaz original para solapar el botón
+    let burbujaSoporte = document.createElement('div');
+    burbujaSoporte.setAttribute('style', 'position:fixed;bottom:10px;right:12px;width:44px;height:44px;background:#10b981;border-radius:50%;box-shadow:0 4px 10px rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;z-index:2100000;cursor:pointer;');
+    burbujaSoporte.innerHTML = `<span style="color:#fff;font-size:18px;">💬</span>`;
+    document.body.appendChild(burbujaSoporte);
+
+    // INICIO EN CALIENTE DEL PROGRAMA
+    aplicarRasgosRealesTuBoton();
     inicializarJornadaHipica();
 </script>
 </body>
