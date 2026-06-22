@@ -116,7 +116,6 @@
     const loadingSubtext = document.getElementById('loading-subtext');
     const unidadesInput = document.getElementById('unidades-input');
 
-    // RE-LLENADO LIMPIO DESDE CERO: Genera un total aleatorio (7 a 21) y marca el rango final inamovible (Lf-5 hasta Lf)
     function inicializarJornadaHipica() {
         estructuraCarreras = [];
         let totalCarrerasHoy = Math.floor(7 + Math.random() * 15); 
@@ -148,12 +147,11 @@
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
         contenedor.innerHTML = "";
-        // Inicializa la matriz con exactamente 6 posiciones fijas para las selecciones del 5y6
+        // Inicializa la matriz lógica estrictamente con las 6 posiciones fijas que requiere el 5y6 (0 al 5)
         datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
         
         let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length;
         let inicio5y6 = numCarrerasHoy - 5; // Lf - 5
-        let contadorValidasInsertadas = 0;
 
         let colH = { 
             1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
@@ -162,19 +160,17 @@
         };
 
         estructuraCarreras.forEach((cCfg) => {
-            // ESCAPE LIMPIO: Si la fila de la plantilla no corre hoy, se la salta sin romper el bucle script
             if (cCfg.inscritos === 0) return;
 
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
             
-            // Si es carrera de la mañana, existe en el código de fondo pero se oculta en la pantalla
             if (!cCfg.visible) {
                 fila.style.display = 'none'; 
                 fila.style.visibility = 'hidden';
             }
 
-            // INDEXACIÓN RIGIDA: Si es carrera del 5y6 recibe su casillero plano del 0 al 5
+            // CALIBRACIÓN DE POSICIÓN ABSOLUTA: Si es válida, calcula su posición real del 0 al 5
             let idxJuego = cCfg.esValida ? (cCfg.carrera - inicio5y6) : -1;
 
             let tit = document.createElement('div');
@@ -197,15 +193,15 @@
                 } else {
                     chk.addEventListener('change', function() {
                         if (chk.checked) {
-                            // Guarda la marca estrictamente en base a su casillero indexado (0 al 5)
-                            if (cCfg.esValida && idxJuego !== -1) {
+                            // Guarda la selección estrictamente en el casillero indexado de posición (0 al 5)
+                            if (idxJuego !== -1) {
                                 if (!datosSeleccionadosRaw[idxJuego].includes(c.toString())) {
                                     datosSeleccionadosRaw[idxJuego].push(c.toString());
                                 }
                             }
                             btn.style.boxShadow = "0 0 0 4px #10b981 inset"; btn.classList.add('selected');
                         } else {
-                            if (cCfg.esValida && idxJuego !== -1) {
+                            if (idxJuego !== -1) {
                                 datosSeleccionadosRaw[idxJuego] = datosSeleccionadosRaw[idxJuego].filter(n => n !== c.toString());
                             }
                             btn.style.boxShadow = "none"; btn.classList.remove('selected');
@@ -222,7 +218,7 @@
     }
 
     function calcularMontoSimulado() {
-        // Valida que los 6 casilleros indexados del 5y6 tengan datos seleccionados
+        // Valida síncronamente que las 6 posiciones de juego tengan datos seleccionados
         let posicionesRellenasEn5y6 = datosSeleccionadosRaw.filter(arr => arr.length > 0).length;
         let comb = datosSeleccionadosRaw.reduce((a, b) => a * b.length, 1);
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
@@ -230,18 +226,25 @@
         
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         
-        // HABILITACIÓN SÍNCRONA DEFINITIVA: Enciende tu botón original al estar llenas las 6 posiciones
+        // HABILITACIÓN DEFINITIVA INDESTRUCTIBLE: Cambia el disabled sobre la referencia original viva del DOM
         sellarBtn.disabled = (posicionesRellenasEn5y6 !== 6);
     }
 
     unidadesInput.addEventListener('input', calcularMontoSimulado);
 
+    // INYECCIÓN VISUAL SEGURA: Altera las clases y textos sin romper el puntero original del DOM
     function aplicarRasgosRealesTuBoton() {
         let listaEmojis = ['🏆', '🐎', '💰', '🎫', '✅', '🎰'];
         let emojiElegido = listaEmojis[Math.floor(Math.random() * listaEmojis.length)];
+        
         sellarBtn.className = 'btn-main btn-sellar group/button';
         sellarBtn.setAttribute('style', 'display: flex !important; align-items: center !important; gap: 6px !important; justify-content: center;');
-        sellarBtn.innerHTML = `<span>${emojiElegido}</span> <span>Sellar Cuadro</span>`;
+        
+        // Inyecta el emoji de forma externa respetando el nodo original del botón
+        sellarBtn.innerText = " Sellar Cuadro";
+        let spanEmoji = document.createElement('span');
+        spanEmoji.innerText = emojiElegido;
+        sellarBtn.prepend(spanEmoji);
     }
 
     sellarBtn.onclick = () => {
@@ -249,7 +252,7 @@
         let vIdx = 0;
         estructuraCarreras.forEach((cCfg) => {
             if (cCfg.esValida) {
-                let sorted = [...datosSeleccionadosRaw[vIdx++]].sort((a,b)=>parseInt(a)-parseInt(b));
+                let sorted = [...datosSeleccionadosRaw[vIdx++].sort((a,b)=>parseInt(a)-parseInt(b))];
                 resumenComb.innerHTML += `C${cCfg.carrera} -> (${sorted.join('-')})<br>`;
             }
         });
@@ -292,13 +295,11 @@
     document.getElementById('aceptar-btn').onclick = () => { overlay.style.display = 'none'; modalTicketExitoso.style.display = 'none'; };
     document.getElementById('imprimir-btn').onclick = () => { alert("Descargando PDF oficial del Ticket..."); };
 
-    // LA BURBUJA INTERCEPTORA: Inyecta el círculo verde flotante de soporte que solapa el botón
     let burbujaSoporte = document.createElement('div');
     burbujaSoporte.setAttribute('style', 'position:fixed;bottom:10px;right:12px;width:44px;height:44px;background:#10b981;border-radius:50%;box-shadow:0 4px 10px rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;z-index:2100000;cursor:pointer;');
     burbujaSoporte.innerHTML = `<span style="color:#fff;font-size:18px;">💬</span>`;
     document.body.appendChild(burbujaSoporte);
 
-    // INICIO EN CALIENTE DE LA MAQUINARIA SÍNCRONA ORIGINAL
     aplicarRasgosRealesTuBoton();
     inicializarJornadaHipica();
 </script>
