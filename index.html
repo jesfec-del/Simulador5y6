@@ -116,6 +116,7 @@
     const loadingSubtext = document.getElementById('loading-subtext');
     const unidadesInput = document.getElementById('unidades-input');
 
+    // RE-LLENADO LIMPIO DESDE CERO: Genera un total aleatorio (7 a 21) y marca el rango final inamovible (Lf-5 hasta Lf)
     function inicializarJornadaHipica() {
         estructuraCarreras = [];
         let totalCarrerasHoy = Math.floor(7 + Math.random() * 15); 
@@ -146,11 +147,11 @@
     }
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
+        // REQUISITO: Borra por completo el contenedor de la pantalla antes de rellenar desde cero
         contenedor.innerHTML = "";
-        // Crea estrictamente los 6 casilleros fijos para las 6 posiciones de la tarde (0 al 5)
-        datosSeleccionadosRaw = Array.from({ length: 6 }, () => []);
         
-        let contadorPosicionesValidas = 0;
+        // Inicializa la matriz con los 21 casilleros físicos para la plantilla completa
+        datosSeleccionadosRaw = Array.from({ length: 21 }, () => []);
 
         let colH = { 
             1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 
@@ -159,23 +160,30 @@
         };
 
         estructuraCarreras.forEach((cCfg) => {
+            // Si la carrera no está en la plantilla o tiene 0 inscritos, no genera elemento
             if (cCfg.inscritos === 0) return;
 
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
             
+            // Si la carrera no pertenece a las últimas 6 de la jornada (visible), se oculta en el fondo
             if (!cCfg.visible) {
                 fila.style.display = 'none'; 
                 fila.style.visibility = 'hidden';
             }
 
-            // ASIGNACIÓN LÓGICA DE POSICIÓN: Si es válida del 5y6 toma de 0 a 5, si no queda excluida
-            let posInh = cCfg.esValida ? contadorPosicionesValidas : -1;
-            if (cCfg.esValida) contadorPosicionesValidas++;
+            // Mantiene el índice rígido basado en el número de carrera real en la plantilla (0 al 20)
+            let idxFilaActual = cCfg.carrera - 1;
 
             let tit = document.createElement('div');
             tit.className = 'titulo-valida';
-            tit.innerText = `C${cCfg.carrera} Pos. ${cCfg.esValida ? (posInh + 1) : 'X'}`;
+            
+            // Calcula visualmente la posición del 5y6 para el usuario (1 a 6) si es válida
+            let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length;
+            let inicio5y6 = numCarrerasHoy - 5;
+            let posUsuario = cCfg.esValida ? (cCfg.carrera - inicio5y6 + 1) : 'X';
+            
+            tit.innerText = `C${cCfg.carrera} Pos. ${posUsuario}`;
             fila.appendChild(tit);
 
             let grid = document.createElement('div');
@@ -193,17 +201,12 @@
                 } else {
                     chk.addEventListener('change', function() {
                         if (chk.checked) {
-                            // Enlaza el caballo directamente a su posición absoluta en el casillero (0 al 5)
-                            if (posInh !== -1) {
-                                if (!datosSeleccionadosRaw[posInh].includes(c.toString())) {
-                                    datosSeleccionadosRaw[posInh].push(c.toString());
-                                }
+                            if (!datosSeleccionadosRaw[idxFilaActual].includes(c.toString())) {
+                                datosSeleccionadosRaw[idxFilaActual].push(c.toString());
                             }
                             btn.style.boxShadow = "0 0 0 4px #10b981 inset"; btn.classList.add('selected');
                         } else {
-                            if (posInh !== -1) {
-                                datosSeleccionadosRaw[posInh] = datosSeleccionadosRaw[posInh].filter(n => n !== c.toString());
-                            }
+                            datosSeleccionadosRaw[idxFilaActual] = datosSeleccionadosRaw[idxFilaActual].filter(n => n !== c.toString());
                             btn.style.boxShadow = "none"; btn.classList.remove('selected');
                         }
                         calcularMontoSimulado();
@@ -218,15 +221,31 @@
     }
 
     function calcularMontoSimulado() {
-        // Cuenta estrictamente que los 6 casilleros de posición tengan al menos una selección puesta
-        let posicionesRellenas = datosSeleccionadosRaw.filter(arr => arr.length > 0).length;
-        let comb = datosSeleccionadosRaw.reduce((a, b) => a * b.length, 1);
+        // Encuentra la cantidad total de carreras programadas para hoy (Línea Final Lf)
+        let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length;
+        let inicio5y6 = numCarrerasHoy - 5; // Lf - 5
+
+        let posicionesRellenasEn5y6 = 0;
+        let comb = 1;
+
+        // Revisa de forma estricta el rango exacto desde Lf-5 hasta Lf en el arreglo
+        for (let i = 1; i <= 21; i++) {
+            if (i >= inicio5y6 && i <= numCarrerasHoy) {
+                let seleccionesDeEstaCarrera = datosSeleccionadosRaw[i - 1].length;
+                if (seleccionesDeEstaCarrera > 0) {
+                    posicionesRellenasEn5y6++;
+                    comb *= seleccionesDeEstaCarrera;
+                }
+            }
+        }
+
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
-        let montoTotal = posicionesRellenas === 6 ? (comb * factorUnidades * 25) : 0;
+        let montoTotal = (posicionesRellenasEn5y6 === 6) ? (comb * factorUnidades * 25) : 0;
         
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
-        // Activa el botón únicamente cuando las 6 posiciones de la tarde están completas
-        sellarBtn.disabled = (posicionesRellenas !== 6);
+        
+        // HABILITACIÓN DEFINITIVA: Si están llenas las 6 posiciones entre Lf-5 y Lf, enciende el botón
+        sellarBtn.disabled = (posicionesRellenasEn5y6 !== 6);
     }
 
     unidadesInput.addEventListener('input', calcularMontoSimulado);
@@ -241,10 +260,9 @@
 
     sellarBtn.onclick = () => {
         overlay.style.display = 'block'; modalConfirmar.style.display = 'block'; resumenComb.innerHTML = "";
-        let posLector = 0;
         estructuraCarreras.forEach((cCfg) => {
             if (cCfg.esValida) {
-                let sorted = [...datosSeleccionadosRaw[posLector++]].sort((a,b)=>parseInt(a)-parseInt(b));
+                let sorted = [...datosSeleccionadosRaw[cCfg.carrera - 1]].sort((a,b)=>parseInt(a)-parseInt(b));
                 resumenComb.innerHTML += `C${cCfg.carrera} -> (${sorted.join('-')})<br>`;
             }
         });
@@ -267,12 +285,11 @@
             let f = new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
             let tTxt = `La Rinconada · 5 y 6\nTicket: #${numTk}\nFecha: ${f}\n`;
             
-            let posImpresion = 0;
             estructuraCarreras.forEach((c) => { 
-                if (c.esValida) { tTxt += `C${c.carrera}: ${datosSeleccionadosRaw[posImpresion++].join('-')}\n`; } 
+                if (c.esValida) { tTxt += `C${c.carrera}: ${datosSeleccionadosRaw[c.carrera - 1].join('-')}\n`; } 
             });
             ticketInfoText.innerText = tTxt;
-            window.redTicketsInh.push({ ticket: numTk, fecha: f, hipodromo: "La Rinconada", tipo: "5y6", selecciones: datosSeleccionadosRaw.map(a=>a.join('-')).join(' | '), monto: document.querySelector('.txt-monto').innerText });
+            window.redTicketsInh.push({ ticket: numTk, fecha: f, hipodromo: "La Rinconada", tipo: "5y6", selecciones: datosSeleccionadosRaw.filter((a,idx)=>estructuraCarreras[idx] && estructuraCarreras[idx].esValida).map(a=>a.join('-')).join(' | '), monto: document.querySelector('.txt-monto').innerText });
             actualizarTablaReporte();
         }
     }
