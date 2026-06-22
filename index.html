@@ -1,131 +1,142 @@
-javascript:(function(){
-    let L = localStorage;
-    let oldOverlay = document.getElementById('modal-overlay');
-    if (oldOverlay) oldOverlay.remove();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Oficial INH - Plataforma de Pruebas</title>
+    <style>
+        body { background-color: #0e0e0e; color: #ffffff; font-family: sans-serif; margin: 0; padding-bottom: 90px; }
+        .cabecera-sim { background: #ffc107; color: #000000; padding: 12px; text-align: center; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .btn-fantasma { background: #000000; color: #ffffff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; }
+        .container-programa { padding: 15px; }
+        .carrera-row { margin: 15px 0; background: #141414; padding: 12px; border-radius: 8px; border: 1px solid #222; }
+        .titulo-valida { color: #ffc107; font-size: 12px; font-weight: bold; margin-bottom: 8px; letter-spacing: 1px; }
+        .grid-caballos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .celda-caballo { position: relative; background: #222; border-radius: 6px; padding: 8px; text-align: center; }
+        .check-nativo { position: absolute; top: 2px; left: 2px; opacity: 0.01; z-index: 10; cursor: pointer; }
+        .btn-tactil { width: 100%; background: #333; color: #fff; border: none; border-radius: 4px; padding: 6px 0; font-weight: bold; font-size: 13px; transition: all 0.1s; cursor: pointer; }
+        .btn-tactil.selected { background: #10b981 !important; }
+        .btn-tactil.retirado { background: #2c1414 !important; color: #774444 !important; text-decoration: line-through !important; opacity: 0.3 !important; cursor: not-allowed !important; }
+        .barra-sellar { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 15px; display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #222; box-sizing: border-box; z-index: 200000; }
+        .txt-monto { font-weight: bold; color: #aaa; font-size: 14px; }
+        .group-button { background: #ffc107; color: #000; border: none; border-radius: 6px; padding: 10px 20px; font-weight: extrabold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(255,193,7,0.2); }
+        .burbuja-chat { position: fixed; bottom: 12px; right: 15px; width: 44px; height: 44px; background: #10b981; border-radius: 50%; box-shadow: 0 4px 12px rgba(16,185,129,0.4); display: flex; align-items: center; justify-content: center; z-index: 2100000; cursor: pointer; }
+        .modal-local { position: fixed; top: 30%; left: 5%; width: 90%; background: #1a1a1a; border: 2px solid #ffc107; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px #000; z-index: 2200000; text-align: center; box-sizing: border-box; }
+        .btn-modal { background: #ffc107; color: #000; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .btn-modal-cancel { background: #444; color: #fff; margin-right: 10px; }
+    </style>
+</head>
+<body>
 
-    let overlay = document.createElement('div');
-    overlay.id = 'modal-overlay';
-    overlay.setAttribute('style', 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:sans-serif;');
-    
-    let box = document.createElement('div');
-    box.setAttribute('style', 'background:#1a1a1a;color:#fff;padding:20px;border-radius:12px;width:350px;border:2px solid #ffc107;text-align:center;');
-    
-    let tit = document.createElement('h3');
-    tit.innerText = "SIMULADOR INH - PROGRAMA";
-    tit.style.margin = "0 0 15px 0";
-    tit.style.color = "#ffc107";
-    
-    let grid = document.createElement('div');
-    grid.style = "display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:20px;";
-    
-    box.append(tit, grid);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    <div class="cabecera-sim">
+        <span>🏆 5 y 6 — La Rinconada</span>
+        <button class="btn-fantasma">1</button>
+    </div>
 
-    window.simuladorPrograma = [];
+    <div class="container-programa" id="pizarra-carreras"></div>
 
-    // EL MOTOR ALEATORIO CALIBRADO: Reemplaza tu lista rígida por un selector probabilístico dinámico
-    for (let i = 1; i <= 6; i++) {
-        let totalEjemplares = 14;
-        let retiradosDeEstaCarrera = [];
-        
-        // Elige de forma automática e impredecible entre 1 y 2 caballos retirados al azar por válida
-        let cantidadRetirados = Math.floor(1 + Math.random() * 2);
-        while (retiradosDeEstaCarrera.length < cantidadRetirados) {
-            let nAzar = Math.floor(1 + Math.random() * totalEjemplares).toString();
-            if (!retiradosDeEstaCarrera.includes(nAzar)) {
-                retiradosDeEstaCarrera.push(nAzar);
-            }
-        }
+    <div class="barra-sellar">
+        <span class="txt-monto">Monto: 0,00</span>
+        <button class="group-button" id="sellar-cuadro-btn">Sellar Cuadro</button>
+    </div>
 
-        // Guarda las especificaciones exactas respetando tu matriz original
-        window.simuladorPrograma.push({
-            carrera: i,
-            ejemplares: totalEjemplares,
-            retirados: retiradosDeEstaCarrera
-        });
+    <div class="burbuja-chat" id="chat-soporte"><span>💬</span></div>
+    <script>
+        // 1. CONFIGURACIÓN DE JORNADA CORRELATIVA DINÁMICA (Descubrimiento Cx)
+        // Elige aleatoriamente el inicio del 5y6 para simular variantes de 11, 12 o 13 carreras totales
+        const carreraInicial = Math.floor(6 + Math.random() * 3);
+        window.simuladorPrograma = [];
 
-        let btnC = document.createElement('button');
-        btnC.innerText = "Carrera " + i;
-        btnC.setAttribute('style', 'padding:10px;background:#333;color:#fff;border:1px solid #555;border-radius:6px;cursor:pointer;font-weight:bold;');
-        
-        btnC.onclick = () => {
-            overlay.style.display = "none";
-            abrirCarreraSimulada(i);
-        };
-        grid.appendChild(btnC);
-    }
-    function abrirCarreraSimulada(num) {
-        let oldFila = document.getElementById('sim-fila-carrera');
-        if (oldFila) oldFila.remove();
+        const container = document.getElementById('pizarra-carreras');
 
-        let cfg = window.simuladorPrograma[num - 1];
-        let filaDOM = document.createElement('div');
-        filaDOM.id = 'sim-fila-carrera';
-        filaDOM.className = 'carrera-row';
-        filaDOM.setAttribute('style', 'position:fixed;bottom:100px;left:5%;width:90%;background:#222;padding:15px;border-radius:10px;z-index:2147483640;border:1px solid #ffc107;');
-
-        let tCarrera = document.createElement('h4');
-        tCarrera.innerText = "VÁLIDA " + num + " (Simulada)";
-        tCarrera.style = "margin:0 0 10px 0;color:#ffc107;text-align:center;";
-        filaDOM.appendChild(tCarrera);
-
-        let gBotones = document.createElement('div');
-        gBotones.style = "display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;";
-
-        for (let c = 1; c <= cfg.ejemplares; c++) {
-            let btn = document.createElement('button');
-            btn.innerText = c;
+        // 2. GENERACIÓN AUTOMÁTICA DE LAS 6 FILAS SECUENCIALES DEL 5Y6 RESIDUOS
+        for (let i = 0; i < 6; i++) {
+            let numCarrera = carreraInicial + i;
             
-            // Mantiene tu lógica de estilos original para los botones activos y deshabilitados
-            if (cfg.retirados.includes(c.toString())) {
-                btn.disabled = true;
-                btn.classList.add('retirado');
-                btn.setAttribute('style', 'padding:12px 0;background:#442222;color:#774444;border:none;border-radius:6px;text-decoration:line-through;opacity:0.5;');
-            } else {
-                btn.setAttribute('style', 'padding:12px 0;background:#333;color:#fff;border:1px solid #555;border-radius:6px;font-weight:bold;cursor:pointer;');
-                btn.onclick = () => {
-                    if (btn.style.background === "rgb(16, 185, 129)") {
-                        btn.style.background = "#333";
-                        btn.classList.remove('selected');
-                    } else {
-                        btn.style.background = "#10b981";
-                        btn.classList.add('selected');
-                    }
-                };
+            // MOTOR DE RETIRADOS ALEATORIOS PROBABILÍSTICO POR CADA VÁLIDA
+            let totalCaballos = 10;
+            let listaRetirados = [];
+            let limiteRetirados = Math.floor(1 + Math.random() * 2); // Determina entre 1 y 2 retirados al azar
+            
+            while(listaRetirados.length < limiteRetirados) {
+                let caballoAzar = Math.floor(1 + Math.random() * totalCaballos).toString();
+                if(!listaRetirados.includes(caballoAzar)) {
+                    listaRetirados.push(caballoAzar);
+                }
             }
-            gBotones.appendChild(btn);
+
+            // Indexa la especificación de la carrera en la base de datos de simulación
+            window.simuladorPrograma.push({ 
+                carrera: numCarrera, 
+                ejemplares: totalCaballos, 
+                retirados: listaRetirados 
+            });
+
+            let fila = document.createElement('div');
+            fila.className = 'carrera-row';
+            
+            let titulo = document.createElement('div');
+            titulo.className = 'titulo-valida';
+            titulo.innerText = `C${numCarrera} Pos. ${i+1}`;
+            fila.appendChild(titulo);
+
+            let grid = document.createElement('div');
+            grid.className = 'grid-caballos';
+
+            for (let c = 1; c <= totalCaballos; c++) {
+                let celda = document.createElement('div');
+                celda.className = 'celda-caballo';
+
+                let chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.className = 'check-nativo';
+
+                let btn = document.createElement('button');
+                btn.className = 'btn-tactil';
+                btn.innerText = c;
+
+                // Aplica de forma síncrona el descarte si cayó en la lotería probabilística
+                if (listaRetirados.includes(c.toString())) {
+                    chk.disabled = true;
+                    btn.disabled = true;
+                    btn.classList.add('retirado');
+                } else {
+                    chk.addEventListener('change', function() {
+                        if (chk.checked) {
+                            btn.classList.add('selected');
+                        } else {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                    btn.onclick = () => { chk.checked = !chk.checked; chk.dispatchEvent(new Event('change')); };
+                }
+
+                celda.append(chk, btn);
+                grid.appendChild(celda);
+            }
+            fila.appendChild(grid);
+            container.appendChild(fila);
         }
 
-        let btnVolver = document.createElement('button');
-        btnVolver.innerText = "VOLVER AL MENU 🏁";
-        btnVolver.setAttribute('style', 'width:100%;margin-top:12px;padding:10px;background:#ffc107;color:#000;border:none;border-radius:6px;font-weight:bold;cursor:pointer;');
-        btnVolver.onclick = () => {
-            filaDOM.remove();
-            overlay.style.display = "flex";
+        // 3. LOGICA OPERATIVA DEL BOTÓN SELLAR Y VENTANAS LOCALES
+        document.getElementById('sellar-cuadro-btn').onclick = () => {
+            let modal = document.createElement('div');
+            modal.className = 'modal-local';
+            modal.id = 'modal-confirmar-modulo';
+            modal.innerHTML = `<h4 style="margin:0 0 10px 0;color:#ffc107;">¿CONFIRMAR CUADRO EN FORMULARIO?</h4>
+                                <p style="font-size:12px;color:#aaa;margin-bottom:15px;">La operación procesará las transacciones digitales.</p>
+                                <button class="btn-modal btn-modal-cancel" id="cancel-sim-btn">Cancelar</button>
+                                <button class="btn-modal" id="confirm-sim-btn">Confirmar</button>`;
+            document.body.appendChild(modal);
+
+            document.getElementById('cancel-sim-btn').onclick = () => modal.remove();
+            document.getElementById('confirm-sim-btn').onclick = () => {
+                modal.innerHTML = `<h4 style="color:#10b981;margin:0 0 10px 0;">🏆 TICKET PROCESADO CON ÉXITO</h4>
+                                    <p style="font-size:14px;font-weight:bold;margin:5px 0;color:#fff;">Ticket: # ${Math.floor(1000000 + Math.random() * 9000000)}</p>
+                                    <button class="btn-modal" id="aceptar-sim-btn" style="background:#10b981;color:#fff;width:100%;margin-top:10px;">Aceptar</button>`;
+                document.getElementById('aceptar-sim-btn').onclick = () => modal.remove();
+            };
         };
-
-        filaDOM.append(gBotones, btnVolver);
-        document.body.appendChild(filaDOM);
-    }
-
-    // Tu bloque flotante inferior de Sellar original intacto de fábrica
-    let barra = document.createElement('div');
-    barra.id = 'sim-barra-inferior';
-    barra.setAttribute('style', 'position:fixed;bottom:0;left:0;width:100%;background:#111;padding:15px;display:flex;justify-content:space-around;align-items:center;border-top:2px solid #ffc107;z-index:2147483642;');
-    
-    let btnSellar = document.createElement('button');
-    btnSellar.innerText = "Sellar Cuadro";
-    btnSellar.setAttribute('style', 'background:#ffc107;color:#000;border:none;border-radius:6px;padding:10px 20px;font-weight:bold;cursor:pointer;');
-    
-    btnSellar.onclick = () => {
-        let conf = confirm("¿Desea sellar el cuadro actual?");
-        if (conf) {
-            alert("¡Cuadro sellado con éxito en el simulador!\nTicket: #" + Math.floor(100000 + Math.random() * 900000));
-        }
-    };
-
-    barra.appendChild(btnSellar);
-    document.body.appendChild(barra);
-    console.log("🏁 ¡Tu simulador original de GitHub ha sido rescatado con retirados aleatorios!");
-})();
+    </script>
+</body>
+</html>
