@@ -1,337 +1,126 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Oficial 5y6 - Fiel al INH</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; padding: 10px; margin: 0; }
-        .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; }
-        h2 { text-align: center; color: #ffc200; margin-top: 0; font-size: 20px; }
-        .input-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        .input-group label { font-weight: bold; font-size: 14px; }
-        .input-group input { width: 80px; padding: 6px; border-radius: 4px; border: 1px solid #555; background: #333; color: #fff; text-align: center; }
-        .panel-juego { background: #1a1a1a; padding: 12px; border-radius: 6px; border: 1px solid #333; margin-top: 15px; }
-        .fila-carrera { display: flex; align-items: center; margin-bottom: 10px; gap: 6px; background: #222; padding: 6px; border-radius: 4px; }
-        .carrera-titulo { width: 100px; font-weight: bold; font-size: 11px; color: #aaa; line-height: 1.2; }
-        .grupo-botones { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-        
-        /* Botones del tablero y botones visuales del modal */
-        .grupo-botones button, .m-btn-visual { width: 32px; height: 32px; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 12px; transition: transform 0.1s ease; }
-        .m-btn-visual { display: inline-flex; align-items: center; justify-content: center; cursor: default; }
-        .grupo-botones button.selected { border: 2px solid #10b981 !important; transform: scale(1.08); box-shadow: 0 0 5px #10b981; }
-        
-        /* Colores Oficiales de Mantas INH */
-        .m-1 { background-color: #f3f4f6 !important; color: #111827 !important; }
-        .m-2 { background-color: #fef08a !important; color: #111827 !important; }
-        .m-3 { background-color: #fca5a5 !important; color: #111827 !important; }
-        .m-4 { background-color: #93c5fd !important; color: #111827 !important; }
-        .m-5 { background-color: #86efac !important; color: #111827 !important; }
-        .m-6 { background-color: #374151 !important; color: #f9fafb !important; }
-        .m-7 { background-color: #fed7aa !important; color: #111827 !important; }
-        .m-8 { background-color: #fbcfe8 !important; color: #111827 !important; }
-        .m-9 { background-color: #a5f3fc !important; color: #111827 !important; }
-        .m-10 { background-color: #d7ccc8 !important; color: #111827 !important; }
-        .m-11 { background-color: #e9d5ff !important; color: #111827 !important; }
-        .m-12 { background-color: #ccffcc !important; color: #111827 !important; }
-        .m-13 { background-color: #4e342e !important; color: #f9fafb !important; }
-        .m-14 { background-color: #cfd8dc !important; color: #111827 !important; }
-        .m-15 { background-color: #fff9c4 !important; color: #111827 !important; }
-        .m-16 { background-color: #0d47a1 !important; color: #f9fafb !important; }
-        .m-17 { background-color: #ad1457 !important; color: #f9fafb !important; }
-        .m-18 { background-color: #004d40 !important; color: #f9fafb !important; }
-        .m-19 { background-color: #e65100 !important; color: #f9fafb !important; }
-        .m-20 { background-color: #263238 !important; color: #f9fafb !important; }
-        
-        .grupo-botones button.retirado { background-color: #222 !important; color: #555 !important; border-color: #333 !important; text-decoration: line-through; opacity: 0.3; cursor: not-allowed !important; box-shadow: none !important; transform: none !important; }
-        .acciones { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-main { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
-        .btn-sellar { background: #ffc200; color: #000; transition: all 0.2s ease; }
-        .btn-sellar:disabled { background: #4b5563 !important; color: #9ca3af !important; opacity: 0.4 !important; cursor: not-allowed !important; }
-        
-        /* Modales */
-        .modal-simulado { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2d2d2d; border: 2px solid #555; padding: 20px; border-radius: 8px; z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center; min-width: 290px; max-width: 95%; box-sizing: border-box; }
-        .modal-simulado p { margin-bottom: 15px; font-size: 14px; }
-        .modal-simulado button { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #2563eb; color: white; margin: 5px; min-width: 85px; }
-        .btn-cancelar, .btn-print { background: #4b5563 !important; }
-        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99998; }
-        #modal-conectando { display: none; background: #1a1a1a; border: 2px solid #ffc200; }
-        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ffc200; animation: spin 1s linear infinite; margin: 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Modales de Error e Historial */
-        #modal-error-inh { display: none; background: #2d2d2d; border: 2px solid #ef4444; z-index: 100000; }
-        #modal-error-inh p { color: #ef4444; font-family: monospace; font-size: 13px; }
-        .btn-error-ok { background: #ef4444 !important; color: white !important; }
-        .seccion-reporte-inh { max-width: 600px; margin: 20px auto 0 auto; background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444; overflow-x: auto; }
-        .seccion-reporte-inh h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffc200; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; color: #e4e4e7; }
-        th { background: #111; padding: 8px; color: #a1a1aa; font-weight: bold; border-bottom: 2px solid #333; }
-        td { padding: 8px; border-bottom: 1px solid #333; white-space: pre-line; }
-        tr:nth-child(even) { background: #1e1e22; }
-        
-        /* Contenedor Fila por Fila Fiel al INH */
-        .bloque-vertical-visual { display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 10px; }
-        .fila-resumen-botones { display: flex; gap: 6px; justify-content: center; width: 100%; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>Simulador de Sistema 5y6 <span style="color: #10b981; font-size:12px;">(MODO INH REALISTA)</span></h2>
-    <div class="input-group">
-        <label>Unidades / Monto:</label>
-        <input type="number" id="unidades-input" value="1" min="1">
-    </div>
-    <div class="panel-juego" id="zona-interactiva">
-        <div id="contenedor-filas"></div>
-        <div class="acciones">
-            <button class="btn-main btn-sellar" id="sellar-btn" disabled>Sellar Cuadro</button>
-        </div>
-    </div>
-</div>
-<div class="seccion-reporte-inh">
-    <h3>Historial de Apuestas (Últimos 50 tickets)</h3>
-    <table>
-        <thead>
-            <tr><th>FECHA</th><th>TICKET</th><th>HIPÓDROMO</th><th>TIPO</th><th>SELECCIONES</th><th>MONTO</th><th>ESTADO</th></tr>
-        </thead>
-        <tbody id="tabla-body"></tbody>
-    </table>
-</div>
-<div class="overlay" id="modal-overlay"></div>
+javascript:(function(){
+    let L = localStorage;
+    let oldOverlay = document.getElementById('modal-overlay');
+    if (oldOverlay) oldOverlay.remove();
 
-<!-- Ventana Local de Combinaciones Modificada Fila por Fila -->
-<div class="modal-simulado" id="modal-confirmar">
-    <p style="font-weight: bold; color: #ffc200; margin-top:0; margin-bottom:5px;">Confirmación de Jugada</p>
-    <div id="resumen-combinaciones" class="bloque-vertical-visual"></div>
-    <div style="margin-top: 15px;">
-        <button class="btn-cancelar" id="cancelar-btn">Cancelar</button>
-        <button id="confirmar-btn">Confirmar</button>
-    </div>
-</div>
+    // 1. GENERADOR DE JORNADA VARIABLE: Elige aleatoriamente el inicio del 5y6 (C6, C7 o C8)
+    let cIni = Math.floor(6 + Math.random() * 3);
 
-<div class="modal-simulado" id="modal-conectando">
-    <p id="loading-title" style="font-weight: bold; color: #ffc200; margin-top:0;">Procesando Apuesta...</p>
-    <div class="spinner"></div>
-    <p id="loading-subtext" style="font-size: 11px; color: #aaa;">Estableciendo conexión con los servidores del INH</p>
-</div>
-
-<div class="modal-simulado" id="modal-error-inh">
-    <p style="font-weight: bold; margin-top:0;">⚠️ ERROR DE SISTEMA</p>
-    <p>El servidor del INH no responde (Error 504 Timeout).</p>
-    <button class="btn-error-ok" id="error-aceptar-btn">Aceptar</button>
-</div>
-
-<div class="modal-simulado" id="modal-ticket-exitoso">
-    <p style="color: #10b981; font-weight: bold; margin-top:0;">✔ Operación Exitosa</p>
-    <p id="ticket-info-text" style="font-size: 12px; font-family: monospace; background:#1a1a1a; padding:6px; border-radius:4px; text-align:left; white-space:pre-wrap;"></p>
-    <button class="btn-print" id="imprimir-btn">Descargar</button>
-    <button id="aceptar-btn">Aceptar</button>
-</div>
-
-<script>
-    let estructuraCarreras = [];
-    let ticketTemporal = null;
-    let loopTextosLoading = null;
-    window.redTicketsInh = window.redTicketsInh || [];
-    let intentosGlobales = 0;
-    let datosSeleccionadosRaw = [];
-
-    const contenedor = document.getElementById('contenedor-filas');
-    const sellarBtn = document.getElementById('sellar-btn');
-    const overlay = document.getElementById('modal-overlay');
-    const modalConfirmar = document.getElementById('modal-confirmar');
-    const modalConectando = document.getElementById('modal-conectando');
-    const modalErrorInh = document.getElementById('modal-error-inh');
-    const modalTicketExitoso = document.getElementById('modal-ticket-exitoso');
-    const resumenComb = document.getElementById('resumen-combinaciones');
-    const confirmarBtn = document.getElementById('confirmar-btn');
-    const cancelarBtn = document.getElementById('cancelar-btn');
-    const ticketInfoText = document.getElementById('ticket-info-text');
-    const tablaBody = document.getElementById('tabla-body');
-    const loadingTitle = document.getElementById('loading-title');
-    const loadingSubtext = document.getElementById('loading-subtext');
-
-    function inicializarJornadaHipica() {
-        estructuraCarreras = [
-            { carrera: 1, inscritos: 12, retirados: [3, 8] },
-            { carrera: 2, inscritos: 10, retirados: [5] },
-            { carrera: 3, inscritos: 14, retirados: [2, 11] },
-            { carrera: 4, inscritos: 11, retirados: [6] },
-            { carrera: 5, inscritos: 15, retirados: [9, 14] },
-            { carrera: 6, inscritos: 13, retirados: [4] }
-        ];
-        renderizarTablero();
-    }
-    function renderizarTablero() {
-        contenedor.innerHTML = '';
-        estructuraCarreras.forEach(c => {
-            let fila = document.createElement('div');
-            fila.className = 'fila-carrera';
-            let titulo = document.createElement('div');
-            titulo.className = 'carrera-titulo';
-            titulo.innerHTML = `Carrera ${c.carrera}:<br><span style="font-size:9px;color:#888;">(${c.inscritos} Ins / ${c.retirados.length} Ret)</span>`;
-            let group = document.createElement('div');
-            group.className = 'grupo-botones';
-            
-            for (let j = 1; j <= c.inscritos; j++) {
-                let btn = document.createElement('button');
-                btn.type = 'button';
-                btn.innerText = j;
-                btn.classList.add(`m-${j}`);
-                if (c.retirados.includes(j)) {
-                    btn.classList.add('retirado');
-                    btn.disabled = true;
-                } else {
-                    btn.onclick = () => {
-                        btn.classList.toggle('selected');
-                        verificarLineasCompletas();
-                    };
-                }
-                group.appendChild(btn);
-            }
-            fila.append(titulo, group);
-            contenedor.appendChild(fila);
-        });
-        verificarLineasCompletas();
-    }
-
-    function verificarLineasCompletas() {
-        let filas = document.querySelectorAll('.fila-carrera');
-        let todasTienenSeleccion = true;
-        filas.forEach(f => {
-            if (f.querySelectorAll('button.selected').length === 0) todasTienenSeleccion = false;
-        });
-        sellarBtn.disabled = !todasTienenSeleccion;
-    }
-
-    function limpiarFormularioInterno() {
-        document.querySelectorAll('.grupo-botones button:not(.retirado)').forEach(b => b.classList.remove('selected'));
-        verificarLineasCompletas(); 
-    }
-
-    sellarBtn.onclick = () => {
-        datosSeleccionadosRaw = [];
-        resumenComb.innerHTML = ''; 
-
-        document.querySelectorAll('.fila-carrera').forEach((f) => {
-            let s = Array.from(f.querySelectorAll('button.selected')).map(b => parseInt(b.innerText));
-            datosSeleccionadosRaw.push(s);
-
-            let divFila = document.createElement('div');
-            divFila.className = 'fila-resumen-botones';
-
-            s.forEach(num => {
-                let pBtn = document.createElement('div');
-                pBtn.className = `m-btn-visual m-${num}`;
-                pBtn.innerText = num;
-                divFila.appendChild(pBtn);
-            });
-
-            resumenComb.appendChild(divFila);
-        });
-
-        confirmarBtn.innerText = "Confirmar";
-        confirmarBtn.disabled = false;
-        overlay.style.display = 'block';
-        modalConfirmar.style.display = 'block';
-    };
-
-    cancelarBtn.onclick = () => {
-        overlay.style.display = 'none';
-        modalConfirmar.style.display = 'none';
-    };
-
-    confirmarBtn.onclick = () => {
-        modalConfirmar.style.display = 'none';
-        modalConectando.style.display = 'block';
-        loadingTitle.innerText = "Procesando Apuesta...";
-        loadingSubtext.innerText = "Estableciendo conexión con los servidores del INH";
-        
-        let paso = 0;
-        loopTextosLoading = setInterval(() => {
-            paso++;
-            if (paso === 1) {
-                loadingTitle.innerText = "Nuevo Intento...";
-                loadingSubtext.innerText = "Estableciendo nueva conexión con la central...";
-            } else if (paso === 2) {
-                loadingTitle.innerText = "Procesando Apuesta...";
-                loadingSubtext.innerText = "Reintentando el procesamiento de los bloques...";
-                paso = 0;
-            }
-        }, 1500);
-        
-        let retrasoServidor = Math.floor(Math.random() * 1500) + 3200; 
-        let esFalla = intentosGlobales === 0 ? true : Math.random() <= 0.20;
-        intentosGlobales++;
-
-        setTimeout(() => {
-            clearInterval(loopTextosLoading); 
-            modalConectando.style.display = 'none';
-
-            if (esFalla) {
-                let verNotificacion = Math.random() < 0.50; 
-                if (verNotificacion) {
-                    modalErrorInh.style.display = 'block';
-                } else {
-                    modalConfirmar.style.display = 'block';
-                }
-                return; 
-            }
-
-            let numTicket = Math.floor(100000 + Math.random() * 900000);
-            let monto = (document.getElementById('unidades-input').value || 1) * 100;
-            let stringTextoComb = datosSeleccionadosRaw.map((s, i) => `C${i+1}(${s.join(',')})`).join(' ');
-            
-            let ahora = new Date();
-            let fechaStr = ahora.toLocaleDateString();
-            let horaStr = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true}).toLowerCase();
-
-            ticketTemporal = {
-                fecha: fechaStr,
-                hora: horaStr,
-                ticket: numTicket.toString(),
-                hipodromo: "La Rinconada",
-                tipo: "5 y 6",
-                selecciones: stringTextoComb,
-                monto: parseFloat(monto).toFixed(2),
-                estado: "PROCESADO"
-            };
-            
-            if (window.redTicketsInh) { window.redTicketsInh.push(ticketTemporal); }
-            ticketInfoText.innerText = `Ticket: # ${numTicket}\nCombinación: ${stringTextoComb}\nMonto: ${monto} Bsf\nProcesado con éxito.`;
-            modalTicketExitoso.style.display = 'block';
-        }, retrasoServidor);
-    };
-
-    document.getElementById('error-aceptar-btn').onclick = () => {
-        modalErrorInh.style.display = 'none';
-        setTimeout(() => {
-            modalConfirmar.style.display = 'block'; 
-        }, 200);
-    };
-
-    document.getElementById('aceptar-btn').onclick = () => {
-        modalTicketExitoso.style.display = 'none';
-        overlay.style.display = 'none';
-        if (ticketTemporal) {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><div>${ticketTemporal.fecha}</div><div style="font-size:8px;color:#666;">${ticketTemporal.hora}</div></td>
-                <td><span style="font-weight:bold;color:#ffc200;">#${ticketTemporal.ticket}</span></td>
-                <td>${ticketTemporal.hipodromo}</td>
-                <td><span style="background:#444;padding:2px 4px;border-radius:3px;">${ticketTemporal.tipo}</span></td>
-                <td title="${ticketTemporal.selecciones}" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ticketTemporal.selecciones}</td>
-                <td>${ticketTemporal.monto} Bsf</td>
-                <td><span style="color:#10b981;">${ticketTemporal.estado}</span></td>`;
-            tablaBody.insertBefore(tr, tablaBody.firstChild);
-            ticketTemporal = null;
-        }
-        limpiarFormularioInterno();
-    };
+    let overlay = document.createElement('div');
+    overlay.id = 'modal-overlay';
+    overlay.setAttribute('style', 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0e0e0e;color:#fff;z-index:2000000;font-family:sans-serif;overflow-y:auto;padding-bottom:90px;');
     
-    document.getElementById('imprimir-btn').onclick = () => { alert("Simulación de descarga."); };
-    window.onload = inicializarJornadaHipica;
-</script>
-</body>
-</html>
+    // TRAMPA DEL TECHO: Cabecera oficial amarilla con el caballo falso 1 en Y(16)
+    let cab = document.createElement('div');
+    cab.setAttribute('style', 'background:#ffc107;color:#000;padding:12px;text-align:center;font-weight:bold;font-size:15px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,0.4);');
+    cab.innerHTML = `<span>🏆 5 y 6 — La Rinconada</span>`;
+    let btnF = document.createElement('button'); btnF.innerText = "1";
+    btnF.setAttribute('style', 'background:#000;color:#fff;border:none;border-radius:4px;padding:3px 6px;font-size:10px;');
+    cab.appendChild(btnF); overlay.appendChild(cab);
+
+    window.simuladorPrograma = [];
+
+    // 2. CONSTRUCCIÓN DE LAS 6 FILAS CORRELATIVAS (Cx hasta Cx+5)
+    for (let i = 0; i < 6; i++) {
+        let numCarrera = cIni + i;
+        let filaDOM = document.createElement('div');
+        filaDOM.className = 'fila-carrera-real';
+        filaDOM.setAttribute('style', 'margin:12px;background:#181818;padding:10px;border-radius:8px;border:1px solid #252525;');
+        
+        let tit = document.createElement('div');
+        tit.innerText = `C${numCarrera} Pos. ${i+1}`;
+        tit.style = "color:#ffc107;font-size:12px;font-weight:bold;margin-bottom:6px;letter-spacing:0.5px;";
+        filaDOM.appendChild(tit);
+
+        let grid = document.createElement('div');
+        grid.style = "display:grid;grid-template-columns:repeat(5, 1fr);gap:6px;";
+
+        // GENERADOR DE RETIRADOS 100% ALEATORIOS POR FILA (Elige entre 1 y 2 al azar por carrera)
+        let totalEjemplares = 10;
+        let retiradosDeEstaCarrera = [];
+        while(retiradosDeEstaCarrera.length < Math.floor(1 + Math.random() * 2)) {
+            let azar = Math.floor(1 + Math.random() * totalEjemplares).toString();
+            if(!retiradosDeEstaCarrera.includes(azar)) retiradosDeEstaCarrera.push(azar);
+        }
+        window.simuladorPrograma.push({ carrera: numCarrera, ejemplares: totalEjemplares, retirados: retiradosDeEstaCarrera });
+
+        for (let c = 1; c <= totalEjemplares; c++) {
+            let caja = document.createElement('div');
+            caja.style = "position:relative;background:#262626;border-radius:6px;padding:6px;text-align:center;";
+
+            let chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.style = "position:absolute;top:2px;left:2px;opacity:0.01;z-index:10;cursor:pointer;";
+            
+            let btn = document.createElement('button');
+            btn.innerText = c;
+            btn.setAttribute('style', 'width:100%;background:#3a3a3a;color:#fff;border:none;border-radius:4px;padding:6px 0;font-weight:bold;font-size:13px;transition:all 0.1s;');
+
+            // Si el generador probabilístico lo retiró, lo apaga y le mete la clase oficial de descarte
+            if (retiradosDeEstaCarrera.includes(c.toString())) {
+                chk.disabled = true;
+                btn.disabled = true;
+                btn.classList.add('retirado');
+                btn.style.background = '#2c1414';
+                btn.style.color = '#774444';
+                btn.style.textDecoration = 'line-through';
+                btn.style.opacity = '0.3';
+            } else {
+                chk.addEventListener('change', function() {
+                    if (chk.checked) { btn.style.background = '#10b981'; btn.classList.add('selected'); }
+                    else { btn.style.background = '#3a3a3a'; btn.classList.remove('selected'); }
+                });
+                btn.onclick = () => { chk.checked = !chk.checked; chk.dispatchEvent(new Event('change')); };
+            }
+            caja.append(chk, btn); grid.appendChild(caja);
+        }
+        filaDOM.appendChild(grid); overlay.appendChild(filaDOM);
+    }
+    // 3. BARRA INFERIOR DE APUESTAS RESTRUCTURADA CON LAS CLASES TÉCNICAS OFICIALES
+    let barra = document.createElement('div');
+    barra.setAttribute('style', 'position:fixed;bottom:0;left:0;width:100%;background:#121212;padding:12px;display:flex;justify-content:space-around;align-items:center;border-top:2px solid #222;box-sizing:border-box;');
+
+    let txtMonto = document.createElement('span');
+    txtMonto.innerText = "Monto: 0,00";
+    txtMonto.style = "font-weight:bold;color:#aaa;font-size:13px;";
+
+    let contenedorBoton = document.createElement('div');
+
+    // MUTACIÓN A TEXTO DE COPA: Adopta la clase group/button del informe técnico real
+    let btnSellar = document.createElement('button');
+    btnSellar.className = 'group/button';
+    btnSellar.innerText = "Sellar Cuadro";
+    btnSellar.setAttribute('style', 'background:#ffc107;color:#000;border:none;border-radius:6px;padding:10px 18px;font-weight:extrabold;font-size:13px;cursor:pointer;box-shadow:0 4px 8px rgba(255,193,7,0.2);');
+    
+    btnSellar.onclick = () => {
+        let modalConfirmar = document.createElement('div');
+        modalConfirmar.id = 'modal-ticket-exitoso';
+        modalConfirmar.setAttribute('style', 'position:fixed;top:30%;left:5%;width:90%;background:#1c1c1c;border:2px solid #ffc107;border-radius:12px;padding:25px;box-shadow:0 12px 35px #000;z-index:2200000;text-align:center;box-sizing:border-box;');
+        modalConfirmar.innerHTML = `<h4 style="margin:0 0 10px 0;color:#ffc107;font-size:14px;letter-spacing:0.5px;">¿CONFIRMAR CUADRO EN FORMULARIO?</h4>
+                                    <p style="font-size:11px;color:#888;margin-bottom:20px;">La operación procesará las transacciones digitales.</p>
+                                    <button id="btn-cancelar-local" style="background:#3a3a3a;color:#fff;border:none;padding:8px 16px;border-radius:4px;margin-right:10px;font-weight:bold;font-size:12px;">Cancelar</button>
+                                    <button id="btn-confirmar-local" style="background:#ffc107;color:#000;border:none;padding:8px 16px;border-radius:4px;font-weight:bold;font-size:12px;">Confirmar</button>`;
+        overlay.appendChild(modalConfirmar);
+
+        document.getElementById('btn-cancelar-local').onclick = () => modalConfirmar.remove();
+        document.getElementById('btn-confirmar-local').onclick = () => {
+            modalConfirmar.innerHTML = `<h4 style="color:#10b981;margin:0 0 8px 0;font-size:14px;font-weight:bold;">🏆 CUADRO PROCESADO CON ÉXITO</h4>
+                                        <p style="font-size:13px;color:#fff;font-weight:extrabold;margin:5px 0;letter-spacing:0.5px;">Ticket: # ${Math.floor(1000000 + Math.random() * 9000000)}</p>
+                                        <button id="aceptar-btn" style="background:#10b981;color:#fff;border:none;padding:8px 20px;border-radius:4px;margin-top:12px;font-weight:bold;width:100%;font-size:12px;">Aceptar</button>`;
+            document.getElementById('aceptar-btn').onclick = () => { modalConfirmar.remove(); };
+        };
+    };
+
+    contenedorBoton.appendChild(btnSellar);
+    barra.append(txtMonto, contenedorBoton);
+    overlay.appendChild(barra);
+
+    // 3. LA BURBUJA INTERCEPTORA: Circulo verde que solapa el botón amarillo en Z-Index por encima
+    let burbujaSoporte = document.createElement('div');
+    burbujaSoporte.setAttribute('style', 'position:fixed;bottom:10px;right:12px;width:42px;height:42px;background:#10b981;border-radius:50%;box-shadow:0 4px 10px rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;z-index:2100000;cursor:pointer;');
+    burbujaSoporte.innerHTML = `<span style="color:#fff;font-size:18px;">💬</span>`;
+    overlay.appendChild(burbujaSoporte);
+
+    document.body.appendChild(overlay);
+    console.log("🏁 ¡Tu simulador original ha sido adaptado con retirados y carreras dinámicas!");
+})();
