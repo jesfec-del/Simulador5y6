@@ -33,7 +33,6 @@ javascript:(function(){
         };
     }
 
-    // RADAR VISUAL: Captura en el DOM únicamente los 6 bloques con tamaño y display activo en pantalla
     function obtenerFilasCarreras() {
         let bts = Array.from(document.querySelectorAll('button, div[role="button"]')).filter(b => /^\d+$/.test(b.innerText.trim()));
         let pts = new Set();
@@ -148,6 +147,7 @@ javascript:(function(){
         function validarDiscordanciasGlobales() {
             let sR = obtenerFilasCarreras(); let pf = window.botCtx.pf;
             for (let g = 0; g < 6; g++) { let r = sR[g]; if (r) { let hbs = pf[g]; for (let h = 0; h < hbs.length; h++) { let cab = hbs[h]; let btn = Array.from(r.querySelectorAll('button')).find(b => parseInt(b.innerText.trim(), 10) === parseInt(cab, 10)); if (!btn || btn.disabled || btn.classList.contains('retirado')) throw new Error("Retirado " + cab); } } }
+        }
             if (!window.botListaMostrada) {
                 let colH = { 1: {b:"#ffeb3b", c:"#000"}, 2: {b:"#ffffff", c:"#000"}, 3: {b:"#2196f3", c:"#fff"}, 4: {b:"#f44336", c:"#fff"}, 5: {b:"#4caf50", c:"#fff"}, 6: {b:"#9e9e9e", c:"#fff"}, 7: {b:"#f57c00", c:"#fff"}, 8: {b:"#e91e63", c:"#fff"}, 9: {b:"#009688", c:"#fff"}, 10: {b:"#9c27b0", c:"#fff"}, 11: {b:"#795548", c:"#fff"}, 12: {b:"#ffc107", c:"#000"}, 13: {b:"#3f51b5", c:"#fff"}, 14: {b:"#000000", c:"#fff"} };
                 let overlay = document.createElement('div'); overlay.id = 'bot-modal-chalecos'; overlay.setAttribute('style', 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2147483647;display:flex;align-items:flex-start;justify-content:center;padding-top:25px;font-family:sans-serif;overflow-y:auto;');
@@ -204,7 +204,7 @@ javascript:(function(){
             if (!checkCancelarInicial && !checkConfirmarInicial) {
                 try { if (!window.botListaMostrada && !modalChalecos) { validarDiscordanciasGlobales(); return; } mC(i); } catch(err) { window.botUI.bS.disabled = false; act(); copiarFallo("FASE INICIAL", err.message); return; }
                 
-                // TU PLAN SÍNCRONO: Congela la acción y despacha el click virtual directo a los 388ms humanos fijos
+                // TU COHETE SÍNCRONO: Espera 388ms de pizarra y dispara el evento nativo sin importar Z-Index
                 setTimeout(() => {
                     let revisarPizarra = setInterval(() => {
                         let btnSellarElastico = fByT(/sellar/i);
