@@ -147,7 +147,7 @@
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
         contenedor.innerHTML = "";
-        // Inicializa la plantilla rígida de 21 casilleros físicos en memoria de forma limpia
+        // Inicializa la matriz con los 21 casilleros físicos para la plantilla completa
         datosSeleccionadosRaw = Array.from({ length: 21 }, () => []);
 
         let colH = { 
@@ -215,36 +215,41 @@
     }
 
     function calcularMontoSimulado() {
-        // DETECCIÓN HUMANA: Localiza dinámicamente la carrera final Lf de la jornada de hoy
-        let numCarrerasHoy = estructuraCarreras.filter(c => c.inscritos > 0).length; // Línea Final (Lf)
-        let inicio5y6 = numCarrerasHoy - 5; // Lf - 5
-
         let posicionesValidasConSeleccion = 0;
         let comb = 1;
 
-        // Pasa el escáner del código original estrictamente en el rango dinámico [Lf-5 hasta Lf]
-        for (let i = 1; i <= 21; i++) {
-            if (i >= inicio5y6 && i <= numCarrerasHoy) {
-                let marcasEnCarrera = datosSeleccionadosRaw[i - 1].length;
-                if (marcasEnCarrera > 0) {
+        // TU LOGICA DIRECTA: Escanea las filas que están VISIBLES en la pantalla
+        let filasDOM = document.querySelectorAll('.carrera-row');
+        filasDOM.forEach(fila => {
+            if (fila.style.display !== 'none' && fila.style.visibility !== 'hidden') {
+                // Cuenta si este bloque de la tarde tiene al menos un botón seleccionado en verde
+                let tieneSeleccion = fila.querySelector('.btn-tactil.selected');
+                if (tieneSeleccion) {
                     posicionesValidasConSeleccion++;
-                    comb *= marcasEnCarrera;
                 }
             }
-        }
+        });
+
+        // Calcula el monto multiplicando las marcas del bloque del 5y6 activo
+        estructuraCarreras.forEach((c) => {
+            if (c.esValida) {
+                let len = datosSeleccionadosRaw[c.carrera - 1].length;
+                if (len > 0) { comb *= len; }
+            }
+        });
 
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
         let montoTotal = (posicionesValidasConSeleccion === 6) ? (comb * factorUnidades * 25) : 0;
         
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         
-        // REGLA SÍNCRONA DE FÁBRICA: Activa el botón únicamente cuando las 6 posiciones visibles están llenas
+        // AMARRE VISUAL SEGURO: Si las 6 posiciones de la tarde están rellenas, enciende tu botón original viva
         sellarBtn.disabled = (posicionesValidasConSeleccion !== 6);
     }
 
     unidadesInput.addEventListener('input', calcularMontoSimulado);
 
-    // INYECCIÓN VISUAL DEL EMOJI SIN DESTRUIR LA REFERENCIA VIVA DEL DOM NATIVA
+    // INYECTA EL EMOJI DE FORMA EXTERNA RESPETANDO LA REFERENCIA ORIGINAL DEL BOTÓN VIVA DOM
     function aplicarRasgosRealesTuBoton() {
         let listaEmojis = ['🏆', '🐎', '💰', '🎫', '✅', '🎰'];
         let emojiElegido = listaEmojis[Math.floor(Math.random() * listaEmojis.length)];
