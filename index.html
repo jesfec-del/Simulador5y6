@@ -147,7 +147,6 @@
     // 2. TU MOTOR MAESTRO ORIGINAL DE RENDERIZACIÓN DE BOTONES Y MANTAS DE COLORES
     function renderizarTablero() {
         contenedor.innerHTML = "";
-        // Inicializa la matriz con los 21 casilleros físicos para la plantilla completa
         datosSeleccionadosRaw = Array.from({ length: 21 }, () => []);
 
         let colH = { 
@@ -162,7 +161,6 @@
             let fila = document.createElement('div');
             fila.className = 'carrera-row';
             
-            // Si la carrera pertenece a la mañana, se mantiene oculta en el DOM
             if (!cCfg.visible) {
                 fila.style.display = 'none'; 
                 fila.style.visibility = 'hidden';
@@ -178,6 +176,12 @@
             let posUsuario = cCfg.esValida ? (cCfg.carrera - inicio5y6 + 1) : 'X';
             
             tit.innerText = `C${cCfg.carrera} Pos. ${posUsuario}`;
+            
+            // Atributo técnico para el radar línea por línea humano
+            if (cCfg.esValida) {
+                fila.setAttribute('data-pos-juego', posUsuario.toString());
+            }
+            
             fila.appendChild(tit);
 
             let grid = document.createElement('div');
@@ -215,22 +219,16 @@
     }
 
     function calcularMontoSimulado() {
-        let posicionesValidasConSeleccion = 0;
+        // ENTRADA EN ADUANA LÍNEA A LÍNEA: Evalúa de forma consecutiva la Pos. 1 hasta la Pos. 6
+        let pos1Valida = document.querySelector('.carrera-row[data-pos-juego="1"] .btn-tactil.selected') ? true : false;
+        let pos2Valida = pos1Valida && document.querySelector('.carrera-row[data-pos-juego="2"] .btn-tactil.selected') ? true : false;
+        let pos3Valida = pos2Valida && document.querySelector('.carrera-row[data-pos-juego="3"] .btn-tactil.selected') ? true : false;
+        let pos4Valida = pos3Valida && document.querySelector('.carrera-row[data-pos-juego="4"] .btn-tactil.selected') ? true : false;
+        let pos5Valida = pos4Valida && document.querySelector('.carrera-row[data-pos-juego="5"] .btn-tactil.selected') ? true : false;
+        let pos6Valida = pos5Valida && document.querySelector('.carrera-row[data-pos-juego="6"] .btn-tactil.selected') ? true : false;
+
+        // Multiplica las combinaciones del bloque del 5y6 activo
         let comb = 1;
-
-        // TU LOGICA DIRECTA: Escanea las filas que están VISIBLES en la pantalla
-        let filasDOM = document.querySelectorAll('.carrera-row');
-        filasDOM.forEach(fila => {
-            if (fila.style.display !== 'none' && fila.style.visibility !== 'hidden') {
-                // Cuenta si este bloque de la tarde tiene al menos un botón seleccionado en verde
-                let tieneSeleccion = fila.querySelector('.btn-tactil.selected');
-                if (tieneSeleccion) {
-                    posicionesValidasConSeleccion++;
-                }
-            }
-        });
-
-        // Calcula el monto multiplicando las marcas del bloque del 5y6 activo
         estructuraCarreras.forEach((c) => {
             if (c.esValida) {
                 let len = datosSeleccionadosRaw[c.carrera - 1].length;
@@ -239,17 +237,16 @@
         });
 
         let factorUnidades = parseInt(unidadesInput.value || "1", 10);
-        let montoTotal = (posicionesValidasConSeleccion === 6) ? (comb * factorUnidades * 25) : 0;
+        let montoTotal = pos6Valida ? (comb * factorUnidades * 25) : 0;
         
         document.querySelector('.txt-monto').innerText = "Monto: " + montoTotal.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " Bs";
         
-        // AMARRE VISUAL SEGURO: Si las 6 posiciones de la tarde están rellenas, enciende tu botón original viva
-        sellarBtn.disabled = (posicionesValidasConSeleccion !== 6);
+        // DISPARO SECUENCIAL: Se habilita el botón original solo si el check list lineal llegó exitosamente hasta la Pos. 6
+        sellarBtn.disabled = !pos6Valida;
     }
 
     unidadesInput.addEventListener('input', calcularMontoSimulado);
 
-    // INYECTA EL EMOJI DE FORMA EXTERNA RESPETANDO LA REFERENCIA ORIGINAL DEL BOTÓN VIVA DOM
     function aplicarRasgosRealesTuBoton() {
         let listaEmojis = ['🏆', '🐎', '💰', '🎫', '✅', '🎰'];
         let emojiElegido = listaEmojis[Math.floor(Math.random() * listaEmojis.length)];
